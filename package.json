@@ -1,0 +1,9 @@
+{
+  "name": "conveyor-game",
+  "version": "0.1.0",
+  "description": "A small puzzle game prototype for the slow game jam 2017",
+  "main": "index.js",
+  "repository": "git@github.com:20kbudget/conveyor.git",
+  "author": "Fabricio C Zuardi <fabricio@fabricio.org>",
+  "license": "AGPL-3.0"
+}
