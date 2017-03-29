@@ -5,5 +5,29 @@
   "main": "index.js",
   "repository": "git@github.com:20kbudget/conveyor.git",
   "author": "Fabricio C Zuardi <fabricio@fabricio.org>",
-  "license": "AGPL-3.0"
+  "license": "AGPL-3.0",
+  "scripts": {
+    "start": "budo index.js --live",
+    "test": "flow",
+    "publish:itch": "butler push docs fczuardi/conveyor:html",
+    "build:web": "browserify index.js -g [ uglifyify ] --outfile docs/index.js",
+    "postbuild:web": "cp index.html index.css docs/.",
+    "format": "prettier --write --single-quote --tab-width 4 --"
+  },
+  "browserify": {
+    "outfile": "docs/index.js",
+    "transform": [
+      "unflowify",
+      "es2040"
+    ]
+  },
+  "devDependencies": {
+    "browserify": "^14.1.0",
+    "budo": "^9.4.7",
+    "es2040": "^1.2.5",
+    "flow-bin": "^0.42.0",
+    "prettier": "^0.22.0",
+    "uglifyify": "^3.0.4",
+    "unflowify": "^1.0.1"
+  }
 }
