@@ -12,10 +12,13 @@ type Scale = { scale: number };
 
 // Player
 // ------
-type Player = (Position & Rotation & Scale);
+type Player = Position & Rotation & Scale;
 
 const regl = require('regl')();
 const extend = require('xtend');
+const identity = require('gl-mat4/identity');
+const perspective = require('gl-mat4/perspective');
+const lookAt = require('gl-mat4/lookAt');
 
 const basicShaders = {
     frag: `
@@ -26,29 +29,49 @@ const basicShaders = {
         }`,
     vert: `
         precision mediump float;
+        uniform mat4 model, view, projection;
         attribute vec2 position;
+        uniform vec3 offset;
+        uniform float scale;
         void main() {
-          gl_Position = vec4(position, 0, 1);
+            gl_Position = projection * view * model * vec4(vec3(position, 0) * scale + offset, 1);
         }`
 };
-const drawPlayer = regl(extend(basicShaders, {
-    uniforms: {
-        color: [0.8, 0.3, 0, 1]
-    },
-    attributes: {
-        position: [
-            [0, 0.5],
-            [-0.5, 0],
-            [0.5, 0],
-        ]
-    },
-    // elements: [
-        // [0, 1],
-        // [1, 2],
-        // [2, 0]
-    // ],
-    lineWidth: 3,
-    count: 3
-}));
 
-drawPlayer();
+const view = lookAt([], [0, 0, 10.0], [0, 0, 0], [0, 1.0, 0]);
+
+const drawPlayer = regl(
+    extend(basicShaders, {
+        attributes: {
+            position: [[0, 1.0], [-1.0, -1.0], [1.0, -1.0]]
+        },
+        uniforms: {
+            view,
+            model: identity([]),
+            projection: ({ viewportWidth, viewportHeight }) =>
+                perspective(
+                    [],
+                    Math.PI / 2,
+                    viewportWidth / viewportHeight,
+                    0.01,
+                    1000
+                ),
+            color: regl.prop('color'),
+            offset: regl.prop('offset'),
+            scale: regl.prop('scale'),
+            rotation: regl.prop('rotation')
+        },
+        elements: [[0, 1], [0, 2], [2, 1]],
+        lineWidth: 1
+    })
+);
+
+regl.frame(({ tick }) => {
+    regl.clear({
+        color: [0, 0, 0, 1]
+    });
+    drawPlayer([
+        { offset: [0, 0, 3], scale: 1, rotation: 0, color: [0.8, 0.3, 0, 1] },
+        { offset: [0, 0.5, 3], scale: 0.3, rotation: 45, color: [0, 0.5, 0, 1] }
+    ]);
+});
