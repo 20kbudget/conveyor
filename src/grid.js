@@ -8,10 +8,12 @@ const draw = regl({
             viewportWidth,
             viewportHeight
         ],
-        fractionThreshold: ({ viewportWidth, viewportHeight }, {gridSize}) => [
+        fractThreshold: (
+            { viewportWidth, viewportHeight },
+            { gridSize }
+        ) => [
             1 / (viewportWidth / gridSize[0]),
             1 / (viewportHeight / gridSize[1])
-
         ]
     },
     attributes: {
@@ -28,14 +30,14 @@ const draw = regl({
     uniform vec2 gridSize;
     uniform vec4 color;
     uniform vec2 screenSize;
-    uniform vec2 fractionThreshold;
+    uniform vec2 fractThreshold;
     void main() {
-        vec2 tileDimensions = vec2(screenSize.x / gridSize.x, screenSize.y / gridSize.y);
-        bool notVGrid = fract(gl_FragCoord.x / tileDimensions.x) > fractionThreshold.x;
-        bool notHGrid = fract(gl_FragCoord.y / tileDimensions.y) > fractionThreshold.y;
-        if (notVGrid && notHGrid) {
-            discard;
-        }
+        vec2 tileDimensions = screenSize / gridSize;
+        bool notGrid = all(greaterThan(
+            fract(gl_FragCoord.xy / tileDimensions),
+            fractThreshold
+        ));
+        if (notGrid) { discard; }
         gl_FragColor = color;
     }`,
     count: 3
