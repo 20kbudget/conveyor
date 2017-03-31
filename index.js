@@ -5,6 +5,7 @@ const identity = require('gl-mat4/identity');
 const perspective = require('gl-mat4/perspective');
 const lookAt = require('gl-mat4/lookAt');
 const drawPlayer = require('./src/player');
+const drawTrackTile = require('./src/track');
 
 const cameraDistance = 3;
 
@@ -16,6 +17,7 @@ const projection = ({ viewportWidth, viewportHeight }) =>
 const render = () => {
     regl.clear({ color: [0, 0, 0, 1] });
     drawPlayer({ color: [0.8, 0.3, 0, 1], model, view, projection });
+    drawTrackTile();
 }
 
 // regl.frame(render);
