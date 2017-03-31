@@ -4,7 +4,7 @@ const regl = require('regl')();
 const identity = require('gl-mat4/identity');
 const perspective = require('gl-mat4/perspective');
 const lookAt = require('gl-mat4/lookAt');
-const drawGrid = require('./src/grid');
+const debugGrid = require('./src/debugGrid');
 const drawPlayer = require('./src/player');
 
 const cameraDistance = 3;
@@ -16,7 +16,7 @@ const projection = ({ viewportWidth, viewportHeight }) =>
 
 const render = () => {
     regl.clear({ color: [0, 0, 0, 1] });
-    drawGrid({ color: [0.5, 0.5, 0.5, 1], gridSize: [10, 10]});
+    debugGrid({ color: [0.5, 0.5, 0.5, 1], gridSize: [10, 10]});
     drawPlayer({ color: [0.8, 0.3, 0, 1], model, view, projection });
 }
 
