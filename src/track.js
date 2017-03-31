@@ -46,9 +46,9 @@
  * Data representation
  * -------------------
  *
- * Each of this tiles can be described in code with a inputs-output pair
- * where the inputs field is an array of coordinates (x, y, z), and the output
- * is a single coordinates.
+ * Each of this tiles can be described in code with a output-inputs pair
+ * where the inputs field is an array of coordinates (x, y, z),
+ * and the output field is a single coordinate.
  *
  * The possible values for coordinates are:
  *
@@ -71,18 +71,37 @@ const regl = require('regl')();
 
 const draw = regl({
     attributes: {
+        position: [
+            // [-1, 1, 0],
+            // [0, 1, 0],
+            // [1, 1, 0],
+            [-1, 0, 0],
+            [0, 0, 0],
+            // [1, 0, 0],
+            // [-1, -1, 0],
+            [0, -1, 0],
+            // [1, -1, 0]
+        ]
+
     },
-    uniforms: {
-    },
+    count: 3,
+    // // elements: [
+        // // [3, 4], [4, 7]
+    // // ],
+    // // lineWidth: 3,
+    // uniforms: {},
     vert: `
+    attribute vec3 position;
     void main() {
+        gl_Position = vec4(position, 1);
     }
     `,
     frag: `
     void main() {
+        
+        gl_FragColor = vec4(1, 0, 0, 1);
     }    
-    `,
-    count: 0
+    `
 });
 
 module.exports = draw;

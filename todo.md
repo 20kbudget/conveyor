@@ -3,7 +3,7 @@
   - [ ] global state
   - [ ] animation
 - [ ] map
-  - [ ] 9 tiles
+  - [ ] 8 tiles
     - [ ] 3 basics (1 input)
       - [ ] (W -> E) straight
       - [ ] (W -> N) curve counter clockwise
@@ -15,7 +15,5 @@
       - [ ] (W. E -> S)
     - [ ] 1 merge (3 inputs)
       - [ ] (W, N, S -> E)
-    - [ ] 1 start (0 inputs) ?
-      - [ ] (0 -> E)
 
 
