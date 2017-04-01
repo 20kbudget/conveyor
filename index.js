@@ -16,7 +16,9 @@ const projection = ({ viewportWidth, viewportHeight }) =>
 
 const render = () => {
     regl.clear({ color: [0, 0, 0, 1] });
-    drawTrackTile();
+    drawTrackTile([
+        {name: 'ws'}
+    ]);
     drawPlayer({ color: [0.8, 0.3, 0, 1], model, view, projection });
 }
 

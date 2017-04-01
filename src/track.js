@@ -1,95 +1,76 @@
 // @flow
 
-/*
- * Each track tile can be represented in a 3x3 grid
- * as n inputs and 1 output.
- *
- * List of the 8 possible tiles:
- * ----------------------------
- *
- * ### Basic
- *
- *   . . .  
- *   + o -  West input with East output (straight segment)
- *   . . .  
- *
- *   . - . 
- *   + o .  West input with North output (counter clockwise turn)
- *   . . . 
- *
- *   . . .
- *   + o .  West input with South output (clockwise turn)
- *   . - .
- *
- * ### Merges
- *
- *   . + .
- *   + o .  West and North inputs with South output
- *   . - .
- *
- *   . . .
- *   + o -  W, S -> E
- *   . + .
- *
- *   . - .
- *   + o +  W, E -> N
- *   . . .
- *
- *   . . .
- *   + o +  W, E -> S
- *   . - .
- *
- *   . + .
- *   + o -  W, N, S -> E
- *   . + .
- *
- * Data representation
- * -------------------
- *
- * Each of this tiles can be described in code with a output-inputs pair
- * where the inputs field is an array of coordinates (x, y, z),
- * and the output field is a single coordinate.
- *
- * The possible values for coordinates are:
- *
- *    [-1,  1, 0]  [0,  1, 0]  [1,  1, 0]
- *    [-1,  0, 0]  [0,  0, 0]  [1,  0, 0]
- *    [-1, -1, 0]  [0, -1, 0]  [1, -1, 0]
- *
- * So the 8 possible tiles can be represented as:
- *
- *  w_e   = { output: [1,  0, 0], inputs: [ [-1, 0, 0] ] } 
- *  w_n   = { output: [0,  1, 0], inputs: [ [-1, 0, 0] ] } 
- *  w_s   = { output: [0, -1, 0], inputs: [ [-1, 0, 0] ] } 
- *  wn_e  = { output: [1,  0, 0], inputs: [ [-1, 0, 0], [0,  1, 0] ] } 
- *  ws_e  = { output: [1,  0, 0], inputs: [ [-1, 0, 0], [0, -1, 0] ] } 
- *  we_n  = { output: [0,  1, 0], inputs: [ [-1, 0, 0], [1,  0, 0] ] } 
- *  we_s  = { output: [0, -1, 0], inputs: [ [-1, 0, 0], [1,  0, 0] ] } 
- *  wns_e = { output: [1,  0, 0], inputs: [ [-1, 0, 0], [0,  1, 0], [0, -1, 0] ] } 
- */
 const regl = require('regl')();
 
+/* Each of the 9 possible tiles is a mesh that can be
+   built using a combination of 12 possible vertices:
+
+      . . . .    . x x .    .  0  1  .
+      . . . .    x x x x    2  3  4  5
+      . . . .    x x x x    6  7  8  9
+      . . . .    . x x .    . 10 11  .
+*/
+const vertices = [
+    [-0.25, +1.00, 0],
+    [+0.25, +1.00, 0],
+    [-1.00, +0.25, 0],
+    [-0.25, +0.25, 0],
+    [+0.25, +0.25, 0],
+    [+1.00, +0.25, 0],
+    [-1.00, -0.25, 0],
+    [-0.25, -0.25, 0],
+    [+0.25, -0.25, 0],
+    [+1.00, -0.25, 0],
+    [-0.25, -1.00, 0],
+    [+0.25, -1.00, 0]
+];
+
+/* Each tile has a name that describes
+   the inputs assuming an output to the East:
+
+           . N .
+           W . E
+           . S .
+
+   . . .   . + .   . . .
+   + o -   . o -   . o -
+   . . .   . . .   . + .
+
+   . + .   . + .   . . .   . + .
+   . o -   + o -   + o -   + o -
+   . + .   . . .   . + .   . + .
+
+   There are two special tiles, one that
+   has no inputs (begin) and one that
+   has no output (end):
+
+   . . .   . . .
+   . + -   + o .
+   . . .   . . .
+
+   The record below contains the mesh of
+   each tile using the indexes from the vertices
+   buffer.
+*/
+const tiles = {
+    w: [[2, 5], [6, 9]],
+    n: [[0, 7], [7, 9], [1, 4], [4, 5]],
+    s: [[10, 3], [3, 5], [11, 8], [8, 9]],
+    ns: [[0, 10], [1, 4], [4, 5], [11, 8], [8, 9]],
+    wn: [[2, 3], [3, 0], [1, 4], [4, 5], [6, 9]],
+    ws: [[6, 7], [7, 10], [11, 8], [8, 9], [2, 5]],
+    wns: [[6, 7], [7, 10], [11, 8], [8, 9], [2, 3], [3, 0], [1, 4], [4, 5]],
+    begin: [[5, 3], [3, 7], [7, 9]],
+    end: [[2, 4], [4, 8], [8, 6]]
+};
+
+console.log({vertices})
 const draw = regl({
     attributes: {
-        position: [
-            // [-1, 1, 0],
-            // [0, 1, 0],
-            // [1, 1, 0],
-            [-1, 0, 0],
-            [0, 0, 0],
-            // [1, 0, 0],
-            // [-1, -1, 0],
-            [0, -1, 0],
-            // [1, -1, 0]
-        ]
-
+        position: vertices
     },
-    count: 3,
-    // // elements: [
-        // // [3, 4], [4, 7]
-    // // ],
-    // // lineWidth: 3,
-    // uniforms: {},
+    elements: (context, {name}) => tiles[name],
+    uniforms: {},
     vert: `
     attribute vec3 position;
     void main() {
@@ -98,9 +79,8 @@ const draw = regl({
     `,
     frag: `
     void main() {
-        
         gl_FragColor = vec4(1, 0, 0, 1);
-    }    
+    }
     `
 });
 
