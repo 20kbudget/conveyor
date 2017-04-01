@@ -7,16 +7,24 @@ const lookAt = require('gl-mat4/lookAt');
 const drawPlayer = require('./src/player');
 const drawTrack = require('./src/track');
 
-const cameraDistance = 20;
+const cameraDistance = 50;
 
 const view = lookAt([], [0, 0, cameraDistance], [0, 0, 0], [0, 1.0, 0]);
 const projection = ({ viewportWidth, viewportHeight }) =>
     perspective([], Math.PI / 3, viewportWidth / viewportHeight, 0.01, 1000);
 
+const tracks = [
+    'n,n,n,n',
+    'w,n,n,w,n,n',
+    'w,n,w,n,w,n,w,n',
+    'w,w,n,n,w,w,w,n,n,w',
+    'begin,w,n,Ns,w,w,w,s,s,w,w,w,s'
+];
 const render = () => {
     regl.clear({ color: [0, 0, 0, 1] });
     drawTrack({
-        track: 'w,w,w,n,w,n,w,w,w,n,w,n',
+        direction: 0,
+        track: tracks[tracks.length - 1],
         view,
         projection
     });
@@ -28,7 +36,6 @@ const render = () => {
         projection
     });
 };
-
 
 // regl.frame(render);
 render();

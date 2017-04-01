@@ -68,16 +68,20 @@ const draw = regl({
     attributes: {
         position: vertices
     },
-    elements: (context, {name}) => tiles[name],
+    elements: (context, { name }) => tiles[name],
     uniforms: {
-        model: regl.prop('model'),
+        rotation: regl.prop('rotation'),
+        translation: regl.prop('translation'),
+        scaling: regl.prop('scaling'),
         view: regl.prop('view'),
         projection: (context, { projection }) => projection(context),
         color: regl.prop('color')
     },
+    lineWidth: 2,
     vert: `
     attribute vec3 position;
-    uniform mat4 model, view, projection;
+    uniform mat4 rotation, translation, scaling, view, projection;
+    mat4 model = translation * rotation * scaling; 
     void main() {
         gl_Position = projection * view * model * vec4(position, 1);
     }

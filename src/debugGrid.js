@@ -8,10 +8,7 @@ const draw = regl({
             viewportWidth,
             viewportHeight
         ],
-        fractThreshold: (
-            { viewportWidth, viewportHeight },
-            { gridSize }
-        ) => [
+        fractThreshold: ({ viewportWidth, viewportHeight }, { gridSize }) => [
             1 / (viewportWidth / gridSize[0]),
             1 / (viewportHeight / gridSize[1])
         ]

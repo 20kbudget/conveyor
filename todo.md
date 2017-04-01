@@ -4,5 +4,5 @@
   - [ ] animation
 - [ ] map
   - [x] 9 tiles
-  - [ ] function to build a full track
+  - [x] function to build a full track
 

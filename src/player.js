@@ -1,5 +1,5 @@
 // @flow
-import type {Vec4, Mat4, ProjectionFn} from './basicTypes';
+import type { Vec4, Mat4, ProjectionFn } from './basicTypes';
 
 // Expected Properties
 type EntityDrawProps = {
