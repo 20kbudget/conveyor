@@ -80,18 +80,38 @@ const draw = regl({
     },
     lineWidth: 2,
     vert: `
+    // the tile output is always on east
+    const vec3 exitCenter = vec3(1.0, 0, 0);
+
+    // the maximum distance possibe
+    const float maxDistance = sqrt(5.0);
+
+    // current vertex
     attribute vec3 position;
+
+    // transformations
     uniform mat4 rotation, translation, scaling, view, projection;
-    mat4 model = translation * rotation * scaling; 
+    mat4 model = translation * rotation * scaling;
+
+    // output variables from vertex shader used by the fragments shader
+    varying float distanceToExitLine;
+
     void main() {
+        vec3 centeredYPosition = position + vec3(0, exitCenter.y - position.y, 0);
+        distanceToExitLine = distance(centeredYPosition, exitCenter);
         gl_Position = projection * view * model * vec4(position, 1);
     }
     `,
     frag: `
     precision mediump float;
     uniform vec4 color;
+    varying float distanceToExitLine;
     void main() {
-        gl_FragColor = color;
+        vec4 brightness = vec4(1,1,1,1);
+        if (distanceToExitLine < 0.4) {
+            brightness = vec4(1.5, 1.5, 1, 1);
+        }
+        gl_FragColor = color * brightness;
     }
     `
 });

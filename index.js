@@ -18,7 +18,8 @@ const tracks = [
     'w,n,n,w,n,n',
     'w,n,w,n,w,n,w,n',
     'w,w,n,n,w,w,w,n,n,w',
-    'begin,w,n,Ns,w,w,w,s,s,w,w,w,s'
+    'begin,w,n,Ns,w,w,w,s,s,w,w,w,s',
+    'w,nS,w,s,s,n,s,Ws,s,w,w,s,s'
 ];
 const render = () => {
     regl.clear({ color: [0, 0, 0, 1] });

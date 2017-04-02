@@ -19,8 +19,7 @@ const drawTile = require('./trackTile');
 
 const tileSize = 2;
 const trackScale = [4, 4, 1];
-const trackColor = [0.5, 0.5, 0.5, 1];
-const baseModel = identity([]);
+const trackColor = [0.5, 0.5, 0.5, 1.0];
 
 const outputRotation = inputName => {
     switch (inputName.toLowerCase()) {
@@ -37,7 +36,7 @@ const getInput = name => {
     if (name.length == 1) {
         return name;
     }
-    const upperCaseLetters = name.split('').filter(c => c.toUpperCase());
+    const upperCaseLetters = name.split('').filter(c => c.toUpperCase() === c);
     if (upperCaseLetters.length === 0) {
         return name;
     }
