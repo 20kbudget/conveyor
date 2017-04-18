@@ -91,7 +91,7 @@ const draw = regl({
 
     // transformations
     uniform mat4 rotation, translation, scaling, view, projection;
-    mat4 model = translation * rotation * scaling;
+    mat4 model = translation * scaling * rotation;
 
     // output variables from vertex shader used by the fragments shader
     varying float distanceToExitLine;
