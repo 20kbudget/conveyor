@@ -8,7 +8,7 @@ type EntityDrawProps = {
     view: Mat4,
     projection: ProjectionFn
 };
-type EntityDraw = (EntityDrawProps) => void;
+type EntityDraw = EntityDrawProps => void;
 
 const regl = require('regl')();
 const draw: EntityDraw = regl({

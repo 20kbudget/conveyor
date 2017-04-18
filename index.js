@@ -34,15 +34,15 @@ let state = {
 };
 
 // const reducers = {
-    // updatePosition: (t, entityPaths, state) =>
-        // entitiesPaths.reduce(path =>
-            // extend(entity, {
-                // position: zipWith(
-                    // entity.position,
-                    // entity.velocity,
-                    // (p, v) => p + t * v
-                // )
-            // }))
+// updatePosition: (t, entityPaths, state) =>
+// entitiesPaths.reduce(path =>
+// extend(entity, {
+// position: zipWith(
+// entity.position,
+// entity.velocity,
+// (p, v) => p + t * v
+// )
+// }))
 // };
 
 const render = () => {
