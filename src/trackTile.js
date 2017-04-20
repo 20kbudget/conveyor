@@ -80,18 +80,18 @@ const draw = regl({
     },
     lineWidth: 2,
     vert: `
-    // the tile output is always on east
-    const vec3 exitCenter = vec3(1.0, 0, 0);
-
-    // the maximum distance possibe
-    const float maxDistance = sqrt(5.0);
-
     // current vertex
     attribute vec3 position;
 
     // transformations
     uniform mat4 rotation, translation, scaling, view, projection;
     mat4 model = translation * scaling * rotation;
+
+    // the tile output is always on east
+    const vec3 exitCenter = vec3(1.0, 0, 0);
+
+    // the maximum distance possibe
+    const float maxDistance = sqrt(5.0);
 
     // output variables from vertex shader used by the fragments shader
     varying float distanceToExitLine;
@@ -108,9 +108,12 @@ const draw = regl({
     varying float distanceToExitLine;
     void main() {
         vec4 brightness = vec4(1,1,1,1);
+
+        // usesful for debugging, paint the exit yellow
         if (distanceToExitLine < 0.4) {
             brightness = vec4(1.5, 1.5, 1, 1);
         }
+
         gl_FragColor = color * brightness;
     }
     `

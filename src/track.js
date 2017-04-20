@@ -1,14 +1,22 @@
 // @flow
-import type { Mat4, ProjectionFn } from './basicTypes';
+import type { Vec3, Mat4, ProjectionFn } from './basicTypes';
 
-type drawTrackFn = (
-    {
-        direction: number,
-        track: string,
-        view: Mat4,
-        projection: ProjectionFn
-    }
-) => void;
+type TrackTile = {
+    name: string,
+    offset: Vec3,
+    angle: number
+};
+
+type ParseTrackFn = ({
+    track: string,
+    direction: number
+}) => TrackTile[];
+
+type DrawTrackFn = ({
+    tiles: TrackTile[],
+    view: Mat4,
+    projection: ProjectionFn
+}) => void;
 
 const identity = require('gl-mat4/identity');
 const multiply = require('gl-mat4/multiply');
@@ -20,6 +28,38 @@ const drawTile = require('./trackTile');
 const tileSize = 2;
 const trackScale = [4, 4, 1];
 const trackColor = [0.5, 0.5, 0.5, 1.0];
+
+const drawTrack: DrawTrackFn = ({ tiles, view, projection }) =>
+    drawTile(
+        tiles.map(tile => ({
+            name: tile.name,
+            color: trackColor,
+            rotation: rotateZ([], identity([]), tile.angle),
+            translation: translate([], identity([]), tile.offset),
+            scaling: scale([], identity([]), trackScale),
+            view,
+            projection
+        }))
+    );
+
+const parseTrack: ParseTrackFn = ({ track, direction }) => {
+    const tileNames = track.split(',');
+    let offset = [0, 0, 0];
+    let angle = direction * Math.PI / 180;
+    return tileNames.reduce((acc, name) => {
+        angle += outputRotation(getInput(name));
+        const nextTile = {
+            name: name.toLowerCase(),
+            offset,
+            angle
+        };
+        const x = tileSize * trackScale[0] * Math.round(Math.cos(angle));
+        const y = tileSize * trackScale[1] * Math.round(Math.sin(angle));
+        const z = 0;
+        offset = [offset[0] + x, offset[1] + y, offset[2] + z];
+        return acc.concat(nextTile);
+    }, []);
+};
 
 const outputRotation = inputName => {
     switch (inputName.toLowerCase()) {
@@ -43,40 +83,7 @@ const getInput = name => {
     return upperCaseLetters[0];
 };
 
-const draw: drawTrackFn = ({ direction, track, view, projection }) => {
-    const tileNames = track.split(',');
-    let offset = [0, 0, 0];
-    let angle = direction * Math.PI / 180;
-    drawTile(
-        tileNames.reduce(
-            (acc, name) => {
-                const inputName = getInput(name);
-                angle += outputRotation(inputName);
-                const translation = translate([], identity([]), offset);
-                const rotation = rotateZ([], identity([]), angle);
-                const scaling = scale([], identity([]), trackScale);
-                const nextTile = {
-                    name: name.toLowerCase(),
-                    color: trackColor,
-                    rotation,
-                    translation,
-                    scaling,
-                    view,
-                    projection
-                };
-                const x = tileSize *
-                    trackScale[0] *
-                    Math.round(Math.cos(angle));
-                const y = tileSize *
-                    trackScale[1] *
-                    Math.round(Math.sin(angle));
-                const z = 0;
-                offset = [offset[0] + x, offset[1] + y, offset[2] + z];
-                return acc.concat(nextTile);
-            },
-            []
-        )
-    );
+module.exports = {
+    parseTrack,
+    drawTrack
 };
-
-module.exports = draw;
