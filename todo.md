@@ -15,5 +15,7 @@
 - [ ] world
     - [ ] regular tick times?
 - [ ] UI?
+- [ ] platform-specific
+    - [ ] detect support for webgl and display a message when not available
 
 
