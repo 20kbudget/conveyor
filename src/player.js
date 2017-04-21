@@ -4,16 +4,18 @@ import type { Vec4, Mat4, ProjectionFn } from './basicTypes';
 // Expected Properties
 type EntityDrawProps = {
     color: Vec4,
-    model: Mat4,
+    translation: Mat4,
+    rotation: Mat4,
     view: Mat4,
     projection: ProjectionFn
 };
-type EntityDraw = EntityDrawProps => void;
+type EntityDraw = (EntityDrawProps | EntityDrawProps[]) => void;
 
 const regl = require('regl')();
 const draw: EntityDraw = regl({
     uniforms: {
-        model: regl.prop('model'),
+        translation: regl.prop('translation'),
+        rotation: regl.prop('rotation'),
         view: regl.prop('view'),
         projection: (context, { projection }) => projection(context),
         color: regl.prop('color')
@@ -23,7 +25,8 @@ const draw: EntityDraw = regl({
     },
     elements: [[0, 1], [0, 2], [2, 1]],
     vert: `
-    uniform mat4 model, view, projection;
+    uniform mat4 translation, rotation, view, projection;
+    mat4 model = translation * rotation;
     attribute vec3 position;
     void main() {
         gl_Position = projection * view * model * vec4(position, 1);

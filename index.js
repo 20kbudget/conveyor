@@ -4,6 +4,7 @@ const identity = require('gl-mat4/identity');
 const scale = require('gl-mat4/scale');
 const perspective = require('gl-mat4/perspective');
 const lookAt = require('gl-mat4/lookAt');
+const rotateZ = require('gl-mat4/rotateZ');
 const translate = require('gl-mat4/translate');
 const extend = require('xtend');
 const { zipWith } = require('ramda');
@@ -23,9 +24,7 @@ const tracks = [
     'w,w,n,n,w,w,w,n,n,w',
     'begin,w,n,Ns,w,w,w,s,s,w,w,w,s',
     'w,nS,w,s,s,n,s,Ws,s,w,w,s,s',
-    'begin,w,wnS',
-    'begin',
-    'wNs'
+    'begin,n,n,end'
 ];
 const track = tracks[tracks.length - 1];
 const tiles = parseTrack({ track, direction: 0 });
@@ -34,66 +33,83 @@ drawTrack({ tiles, view, projection });
 
 let state = {
     player: {
-        position: [-4, 0, 0],
-        velocity: [0, 0, 0]
+        position: [4, 0, 0],
+        angle: [0, 0, 0]
     }
 };
 
-const updatePosition = ({ state, deltaT = 1 }) => {
-    const nexPosition = zipWith(
-        (p, v) => p + deltaT * v,
-        state.position,
-        state.velocity
-    );
-    return extend(state, { position: nexPosition });
-};
-
-const STEP_ANGLE = Math.PI * 1 / 4; // 45 degrees
-const CURVE_CW = true;
-const CURVE_CCW = !CURVE_CW;
-const updateVelocity = ({
+const rad = degree => degree * Math.PI / 180;
+const DIRECTION_CW = -1;
+const DIRECTION_CCW = 1;
+const curveMove = ({
     state,
-    velocity = 1,
-    direction = [0, 0, 0],
-    sweep = CURVE_CW,
-    progress = 1.0
+    center,
+    radius = 4,
+    curveAngle = 90,
+    direction = DIRECTION_CCW,
+    startAngle,
+    playerStartAngle,
+    progress
 }) => {
-    const angle = direction[2] * progress * STEP_ANGLE;
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
-    const nextVelocity = [
-        velocity * (sweep ? cos : sin),
-        velocity * (sweep ? sin : cos),
-        0
-    ];
-    return extend(state, { velocity: nextVelocity });
+    const curveProgress = progress * curveAngle * direction;
+    const angle = rad(startAngle + curveProgress);
+    const playerAngle = rad(playerStartAngle + curveProgress);
+    const x = center[0] + radius * Math.cos(angle);
+    const y = center[1] + radius * Math.sin(angle);
+    const newPosition = [x, y, 0];
+    return extend(state, { position: newPosition, angle: playerAngle });
 };
 
-let steps = 5;
-let states = [state];
-for (let count = 0; count < steps; count ++) {
+let steps = 10;
+let states = [];
+// let states = [state];
+const vecSum = zipWith((a, b) => a + b);
+let center = vecSum(state.player.position, [0, 4, 0]);
+// const center = vecSum(state.player.position, [4, 0, 0]);
+for (let count = 0; count <= steps; count++) {
+    // for (let count = 0; count < steps/2; count++) {
     state = extend(state, {
-        player: updatePosition({
-            deltaT: 1,
-            state: updateVelocity({
-                state: state.player,
-                velocity: 10 / steps,
-                curve: false,
-                direction: [0, 0, 1],
-                sweep: CURVE_CW,
-                progress: count / steps
-            })
+        player: curveMove({
+            state: state.player,
+            center,
+            startAngle: -90,
+            playerStartAngle: 0,
+            progress: count / steps,
+            radius: 4,
+            curveAngle: 90,
+            direction: DIRECTION_CCW
         })
     });
-    states.push(extend(state))
+    states.push(extend(state));
+}
+center = vecSum(state.player.position, [-4, 0, 0]);
+for (let count = 0; count <= steps; count++) {
+    // for (let count = 0; count < steps/2; count++) {
+    state = extend(state, {
+        player: curveMove({
+            state: state.player,
+            center,
+            startAngle: 0,
+            playerStartAngle: 90,
+            progress: count / steps,
+            radius: 4,
+            curveAngle: 90,
+            direction: DIRECTION_CCW
+        })
+    });
+    states.push(extend(state));
 }
 let players = states.map(state => {
     const translation = translate([], identity([]), state.player.position);
+    const rotation = rotateZ([], identity([]), state.player.angle);
     return {
         color: [0.8, 0.3, 0, 1],
-        model: translation,
+        translation,
+        rotation,
         view,
         projection
     };
-})
-players.forEach(player => drawPlayer(player));
+});
+console.log({ states });
+drawPlayer(players);
+// players.forEach(player => drawPlayer(player));
