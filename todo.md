@@ -1,7 +1,8 @@
 - [ ] player
     - [ ] move
-        - [ ] velocity x and y
-        - [ ] rotate clockwise / counter-clockwise
+        - [ ] lineMove state reducer
+        - [ ] update player position on enterFrame
+        - [x] curveMove state reducer
     - [ ] death
         - [ ] check if there is a conveyor on the same base z position
     - [ ] jump
@@ -9,13 +10,20 @@
         - [ ] global state
         - [ ] animation
 - [ ] tracks
-    - [x] color hints in frag shader to know the output of a tile
-    - [x] 9 tiles
-    - [x] function to build a full track
+    - [ ] map editor app
 - [ ] world
     - [ ] regular tick times?
 - [ ] UI?
 - [ ] platform-specific
     - [ ] detect support for webgl and display a message when not available
 
+### Roadmap
+
+#### April 22-27
+
+- player animation without jumping
+- jump to different track tiles
+- publish alpha on itch.io
+- TDAH Talk about the game
+- status updates on blogs
 
