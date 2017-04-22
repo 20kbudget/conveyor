@@ -9,7 +9,8 @@ type TrackTile = {
 
 type ParseTrackFn = ({
     track: string,
-    direction: number
+    direction: number,
+    offset: Vec3
 }) => TrackTile[];
 
 type DrawTrackFn = ({
@@ -25,7 +26,7 @@ const rotateZ = require('gl-mat4/rotateZ');
 const translate = require('gl-mat4/translate');
 const drawTile = require('./trackTile');
 
-const tileSize = 2;
+const tileSize = 2 * 8 / 10;
 const trackScale = [4, 4, 1];
 const trackColor = [0.5, 0.5, 0.5, 1.0];
 
@@ -42,9 +43,8 @@ const drawTrack: DrawTrackFn = ({ tiles, view, projection }) =>
         }))
     );
 
-const parseTrack: ParseTrackFn = ({ track, direction }) => {
+const parseTrack: ParseTrackFn = ({ track, direction, offset = [0, 0, 0] }) => {
     const tileNames = track.split(',');
-    let offset = [0, 0, 0];
     let angle = direction * Math.PI / 180;
     return tileNames.reduce((acc, name) => {
         angle += outputRotation(getInput(name));
