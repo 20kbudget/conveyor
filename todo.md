@@ -1,4 +1,7 @@
 - [ ] player
+    - [ ] tools / debug
+        - [ ] full track trail print
+        - [ ] map editor app
     - [ ] move
         - [ ] lineMove state reducer
         - [ ] update player position on enterFrame
@@ -10,7 +13,6 @@
         - [ ] global state
         - [ ] animation
 - [ ] tracks
-    - [ ] map editor app
 - [ ] world
     - [ ] regular tick times?
 - [ ] UI?

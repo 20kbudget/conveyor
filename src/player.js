@@ -2,17 +2,36 @@
 import type { Vec3, Vec4, Mat4, ProjectionFn } from './basicTypes';
 
 // Expected Properties
-type EntityDrawProps = {
+type PlayerDrawArgs = {
     color: Vec4,
     translation: Mat4,
     rotation: Mat4,
     view: Mat4,
     projection: ProjectionFn
 };
-type EntityDraw = (EntityDrawProps | EntityDrawProps[]) => void;
+type PlayerDraw = (PlayerDrawArgs | PlayerDrawArgs[]) => void;
+
+type PlayerState = {
+    position: Vec3,
+    angleZ: number
+};
+
+type LineMove = ({
+    state: PlayerState,
+    startPosition: Vec3,
+    progress: number,
+    distance: number,
+    angle: number
+}) => PlayerState;
+
+type PrintLinePath = (
+    distance: number,
+    angle: number,
+    states: Object[],
+    steps: number
+) => Object;
 
 type TrailDebug = (
-    state: Object,
     states: Object[],
     steps: number,
     radius: number,
@@ -24,11 +43,13 @@ type TrailDebug = (
 
 const regl = require('regl')();
 const extend = require('xtend');
+const { vecSum } = require('./vectors');
 
 const DIRECTION_CW = -1;
 const DIRECTION_CCW = 1;
+const tileSize = 8 * 8 / 10;
 
-const draw: EntityDraw = regl({
+const draw: PlayerDraw = regl({
     uniforms: {
         translation: regl.prop('translation'),
         rotation: regl.prop('rotation'),
@@ -56,6 +77,23 @@ const draw: EntityDraw = regl({
 });
 
 const rad = degree => degree * Math.PI / 180;
+const lineMove: LineMove = ({
+    state,
+    progress,
+    startPosition,
+    distance = tileSize,
+    angle = 0
+}) => {
+    let nextState = state;
+    const totalLength = progress * distance;
+    const x = Math.cos(rad(angle)) * totalLength;
+    const y = Math.sin(rad(angle)) * totalLength;
+    const offset = [x, y, 0];
+    const position = vecSum(startPosition, offset);
+    nextState = extend(state, { position });
+    return nextState;
+};
+
 const curveMove = ({
     state,
     center,
@@ -75,8 +113,27 @@ const curveMove = ({
     return extend(state, { position: newPosition, angleZ: playerAngle });
 };
 
+const printLinePath: PrintLinePath = (distance, angle, states, steps) => {
+    const playerState = states[states.length - 1].player;
+    let state = playerState;
+    const startPosition = playerState.position;
+    // for (let count = 0; count < steps/2; count++) {
+    for (let count = 0; count <= steps; count++) {
+        state = extend(state, {
+            player: lineMove({
+                state: playerState,
+                progress: count / steps,
+                distance,
+                angle,
+                startPosition
+            })
+        });
+        states.push(extend(state));
+    }
+    return state;
+};
+
 const trailDebug: TrailDebug = (
-    state,
     states,
     steps,
     radius,
@@ -85,11 +142,13 @@ const trailDebug: TrailDebug = (
     playerStartAngle,
     direction
 ) => {
+    const playerState = states[states.length - 1].player;
+    let state = playerState;
+    // for (let count = 0; count < steps/2; count++) {
     for (let count = 0; count <= steps; count++) {
-        // for (let count = 0; count < steps/2; count++) {
         state = extend(state, {
             player: curveMove({
-                state: state.player,
+                state: playerState,
                 center,
                 startAngle,
                 playerStartAngle,
@@ -105,6 +164,8 @@ const trailDebug: TrailDebug = (
 };
 module.exports = {
     drawPlayer: draw,
+    lineMove,
+    printLinePath,
     trailDebug,
     DIRECTION_CW,
     DIRECTION_CCW
