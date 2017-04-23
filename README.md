@@ -1,2 +1,3 @@
 # conveyor
-My entry for the slow game jam (March 2017) https://itch.io/jam/slow-game-jam
+
+Under development game, check http://blog.20kbudget.com/ for updates on the progress.
