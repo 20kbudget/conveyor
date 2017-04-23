@@ -35,7 +35,7 @@ const tracks = [
     'n,s,s,s,n,n,s,s,s,n,n,s,s,s,n,n,s,s,s,n', // X
     'n,s,s,s,n', // convoluted turn
     'n,s,s,s,n,s,s,s', // small 8, only curves, we shouldnt allow this
-    'n,s,s,s,n,w,s,w,s,w,s,w',
+    'n,s,s,s,n,w,s,w,s,w,s,w'
     // 's,s,w,s,s,w'
 ];
 const track = tracks[tracks.length - 1];
@@ -126,8 +126,8 @@ const secondFrame = regl.frame(() => {
     // console.log('foo')
     // drawPlayer([players[frameCount], players[(frameCount + 32) % players.length]]);
     // drawPlayer([players[frameCount], players[(frameCount + 24) % players.length]]);
-    drawPlayer(players[frameCount])
+    drawPlayer(players[frameCount]);
     // drawPlayer(players.filter((p,i) => (frameCount == i)));
     frameCount = (frameCount + 1) % players.length;
     // secondFrame.cancel();
-})
+});
