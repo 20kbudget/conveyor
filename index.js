@@ -35,7 +35,8 @@ const tracks = [
     'n,s,s,s,n,n,s,s,s,n,n,s,s,s,n,n,s,s,s,n', // X
     'n,s,s,s,n', // convoluted turn
     'n,s,s,s,n,s,s,s', // small 8, only curves, we shouldnt allow this
-    'n,s,s,s,n,w,s,w,s,w,s,w'
+    'n,s,s,s,n,w,s,w,s,w,s,w',
+    // 's,s,w,s,s,w'
 ];
 const track = tracks[tracks.length - 1];
 const trackOffset = [tileSize / 2, 0, 0];
@@ -51,8 +52,8 @@ let state = {
 const drawPlayerParams = ({ position, angleZ }, index) => {
     const translation = translate([], identity([]), position);
     const rotation = rotateZ([], identity([]), angleZ);
-    const colorA = [0.8, 0.3, 0, 1]
-    const colorB = [1, 1, 0, 1]
+    const colorA = [0.8, 0.3, 0, 1];
+    const colorB = [1, 1, 0, 1];
     // const color = angleZ % (Math.PI / 2) === 0 ? colorB : colorA;
     const color = colorA;
     return {
@@ -64,11 +65,16 @@ const drawPlayerParams = ({ position, angleZ }, index) => {
     };
 };
 
-let steps = 10;
+const radius = tileSize / 2;
+// const curveVsLineRatio = 0.75 * Math.PI / 4;
+const curveVsLineRatio = 0.6;
+console.log(curveVsLineRatio);
+let steps = 60;
+let curveSteps = Math.round(steps * curveVsLineRatio);
 // let states = [];
 let states = [state];
-const radius = tileSize / 2;
-let debugParams = [states, steps, radius];
+let lineDebugParams = [states, steps, radius];
+let debugParams = [states, curveSteps, radius];
 
 let center = vecSum(state.player.position, [0, radius, 0]);
 state = trailDebug(...debugParams, center, -90, 0, DIRECTION_CCW);
@@ -85,26 +91,43 @@ state = trailDebug(...debugParams, center, 0, -90, DIRECTION_CW);
 center = vecSum(state.player.position, [0, -radius, 0]);
 state = trailDebug(...debugParams, center, 90, -180, DIRECTION_CCW);
 
-state = printLinePath(tileSize, -90, ...debugParams);
+// // alternate first curve
+// let center = vecSum(state.player.position, [0, -radius, 0]);
+// state = trailDebug(...debugParams, center, 90, 0, DIRECTION_CW);
+
+// alternate path removes this
+state = printLinePath(tileSize, -90, ...lineDebugParams);
 
 center = vecSum(state.player.position, [-radius, 0, 0]);
 state = trailDebug(...debugParams, center, 0, -90, DIRECTION_CW);
 
-state = printLinePath(tileSize, -180, ...debugParams);
+state = printLinePath(tileSize, -180, ...lineDebugParams);
 
 center = vecSum(state.player.position, [0, radius, 0, 0]);
 state = trailDebug(...debugParams, center, -90, -180, DIRECTION_CW);
 
-state = printLinePath(tileSize, 90, ...debugParams);
+// alternate path removes this
+state = printLinePath(tileSize, 90, ...lineDebugParams);
 
 center = vecSum(state.player.position, [radius, 0, 0]);
 state = trailDebug(...debugParams, center, -180, 90, DIRECTION_CW);
 
-state = printLinePath(tileSize, 0, ...debugParams);
+state = printLinePath(tileSize, 0, ...lineDebugParams);
 
-let players = states.map((state, index) => drawPlayerParams(state.player, index));
+let players = states.map((state, index) =>
+    drawPlayerParams(state.player, index)
+);
 regl.clear({ color: [0, 0, 0, 1] });
 drawTrack({ tiles, view, projection });
 drawPlayer(players);
-// drawPlayer(drawPlayerParams(state.player));
-// players.forEach(player => drawPlayer(player));
+
+let frameCount = 0;
+const secondFrame = regl.frame(() => {
+    // console.log('foo')
+    // drawPlayer([players[frameCount], players[(frameCount + 32) % players.length]]);
+    // drawPlayer([players[frameCount], players[(frameCount + 24) % players.length]]);
+    drawPlayer(players[frameCount])
+    // drawPlayer(players.filter((p,i) => (frameCount == i)));
+    frameCount = (frameCount + 1) % players.length;
+    // secondFrame.cancel();
+})
