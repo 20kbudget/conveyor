@@ -17,7 +17,7 @@ const {
     DIRECTION_CCW
 } = require('./src/player');
 
-const cameraDistance = 40;
+const cameraDistance = 80;
 
 const tileSize = 8 * 8 / 10;
 const view = lookAt([], [0, 0, cameraDistance], [0, 0, 0], [0, 1.0, 0]);
@@ -25,18 +25,15 @@ const projection = ({ viewportWidth, viewportHeight }) =>
     perspective([], Math.PI / 3, viewportWidth / viewportHeight, 0.01, 1000);
 
 const tracks = [
-    'n,n,n,n',
-    'w,n,n,w,n,n',
-    'w,n,w,n,w,n,w,n',
-    'w,w,n,n,w,w,w,n,n,w',
-    'begin,w,n,Ns,w,w,w,s,s,w,w,w,s',
-    'w,nS,w,s,s,n,s,Ws,s,w,w,s,s',
-    'begin,w,n,s,nS,wn,ws,wnS,end', //all tiles one of each
-    'n,s,s,s,n,n,s,s,s,n,n,s,s,s,n,n,s,s,s,n', // X
-    'n,s,s,s,n', // convoluted turn
-    'n,s,s,s,n,s,s,s', // small 8, only curves, we shouldnt allow this
-    'n,s,s,s,n,w,s,w,s,w,s,w'
-    // 's,s,w,s,s,w'
+    'l,r,r,r,l', // convoluted turn
+    'l,l,l,l', // INVALID only curves, minimal circle
+    'l,r,r,r,l,r,r,r', // INVALID only curves, small 8
+    'l,r,r,r,l,l,r,r,r,l,l,r,r,r,l,l,r,r,r,l', // X
+    'begin,f,l,r,lR,fl,fr,flR,end', //all tiles one of each
+    // 'l,r,r,l(f,f)r,l,f,r,f,r,f,r,r(f)f', //WIP
+    'l,r,r,lR,l,f,r,Fr,r,f,r,fr',
+    'f,r,r,f,r,r',
+    'l,r,r,lR,l,f,r,Fr,r,f,r,fr'
 ];
 const track = tracks[tracks.length - 1];
 const trackOffset = [tileSize / 2, 0, 0];

@@ -12,7 +12,8 @@
 
 - [ ] player
     - [ ] move
-        - [ ] update player position on enterFrame
+        - [ ] update opsition based on current tile / position instead of precalculating all states
+        - [x] update player position on enterFrame
         - [x] lineMove state reducer
         - [x] curveMove state reducer
     - [ ] death
@@ -21,7 +22,8 @@
         - [ ] tap listener
         - [ ] global state
         - [ ] animation
- [ ] tracks
+- [ ] tracks
+    - [ ] store information about all track tiles (rotation, curves, inputs)
 - [ ] world
     - [ ] regular tick times?
 - [ ] tools / debug
@@ -33,4 +35,6 @@
 
 ### Future Roadmap
 
+#### After launch
 
+- move more code to the gpu

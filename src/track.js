@@ -43,13 +43,30 @@ const drawTrack: DrawTrackFn = ({ tiles, view, projection }) =>
         }))
     );
 
+const tileNames = {
+    f: 'forward',
+    lf: 'forwardLeft',
+    rf: 'forwardRight',
+    lrf: 'forwardLeftRight',
+
+    l: 'left',
+    fl: 'forwardLeft',
+    rl: 'leftRight',
+    frl: 'forwardLeftRight',
+
+    r: 'right',
+    lr: 'leftRight',
+    fr: 'forwardRight',
+    flr: 'forwardLeftRight'
+};
+
 const parseTrack: ParseTrackFn = ({ track, direction, offset = [0, 0, 0] }) => {
-    const tileNames = track.split(',');
+    const shortNames = track.split(',');
     let angle = direction * Math.PI / 180;
-    return tileNames.reduce((acc, name) => {
+    return shortNames.reduce((acc, name) => {
         angle += outputRotation(getInput(name));
         const nextTile = {
-            name: name.toLowerCase(),
+            name: tileNames[name.toLowerCase()] || name,
             offset,
             angle
         };
@@ -63,9 +80,9 @@ const parseTrack: ParseTrackFn = ({ track, direction, offset = [0, 0, 0] }) => {
 
 const outputRotation = inputName => {
     switch (inputName.toLowerCase()) {
-        case 's':
+        case 'r':
             return -Math.PI / 2;
-        case 'n':
+        case 'l':
             return Math.PI / 2;
         default:
             return 0;
