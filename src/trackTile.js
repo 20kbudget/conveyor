@@ -30,35 +30,30 @@ const gridPoints = [
 ];
 const vertices = gridPoints.map(point => gridToVertex(...point));
 
-/* Each tile has a name that describes
-   the inputs assuming an output to the East:
+/* Each tile has a name based on the direction of
+the inputs with the output facing east.
 
-           . N .
-           W . E
-           . S .
+The diagram below shows each of them
+using + for inputs and - for outputs:
 
-     w       n       s
+forward, left, right,
+
    . . .   . + .   . . .
    + o -   . o -   . o -
    . . .   . . .   . + .
 
-     ns      wn      ws     wns
-   . + .   . + .   . . .   . + .
-   . o -   + o -   + o -   + o -
-   . + .   . . .   . + .   . + .
+leftRight, forwardLeft, forwardRight,
 
-   There are two special tiles, one that
-   has no inputs (begin) and one that
-   has no output (end):
+   . + .   . + .   . . .
+   . o -   + o -   + o -
+   . + .   . . .   . + .
 
-   begin   end
-   . . .   . . .
-   . + -   + o .
-   . . .   . . .
+forwardLeftRight, begin, end
 
-   The record below contains the mesh of
-   each tile using the indexes from the vertices
-   buffer.
+   . + .   . . .   . . .
+   + o -   . + -   + o .
+   . + .   . . .   . . .
+
 */
 const tiles = {
     forward: [[8, 11], [11, 16], [16, 12], [12, 9], [9, 4], [4, 8]],
@@ -70,6 +65,26 @@ const tiles = {
     forwardLeftRight: [ [8, 11], [11, 16], [16, 15], [15, 18], [18, 20], [20, 17], [17, 19], [19, 13], [13, 12], [12, 9], [9, 4], [4, 5], [5, 0], [0, 2], [2, 1], [1, 3], [3, 7], [7, 8] ],
     begin: [[8, 11], [11, 16], [16, 13], [13, 5], [5, 8]],
     end: [[6, 14], [14, 12], [12, 9], [9, 4], [4, 6]]
+};
+
+const shortTileNames = {
+    f: 'forward',
+    lf: 'forwardLeft',
+    rf: 'forwardRight',
+    lrf: 'forwardLeftRight',
+    rlf: 'forwardLeftRight',
+
+    l: 'left',
+    fl: 'forwardLeft',
+    rl: 'leftRight',
+    frl: 'forwardLeftRight',
+    rfl: 'forwardLeftRight',
+
+    r: 'right',
+    lr: 'leftRight',
+    fr: 'forwardRight',
+    flr: 'forwardLeftRight',
+    lfr: 'forwardLeftRight'
 };
 
 const draw = regl({
@@ -93,7 +108,6 @@ const draw = regl({
     // transformations
     uniform mat4 rotation, translation, scaling, view, projection;
 
-    // mat4 model = rotation * translation  * scaling;
     mat4 model = translation  * scaling * rotation;
 
     // the tile output is always on east
@@ -128,4 +142,7 @@ const draw = regl({
     `
 });
 
-module.exports = draw;
+module.exports = {
+    drawTile: draw,
+    shortTileNames
+};

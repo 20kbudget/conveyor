@@ -17,7 +17,7 @@ const {
     DIRECTION_CCW
 } = require('./src/player');
 
-const cameraDistance = 80;
+const cameraDistance = 90;
 
 const tileSize = 8 * 8 / 10;
 const view = lookAt([], [0, 0, cameraDistance], [0, 0, 0], [0, 1.0, 0]);
@@ -29,15 +29,28 @@ const tracks = [
     'l,l,l,l', // INVALID only curves, minimal circle
     'l,r,r,r,l,r,r,r', // INVALID only curves, small 8
     'l,r,r,r,l,l,r,r,r,l,l,r,r,r,l,l,r,r,r,l', // X
-    'begin,f,l,r,lR,fl,fr,flR,end', //all tiles one of each
-    // 'l,r,r,l(f,f)r,l,f,r,f,r,f,r,r(f)f', //WIP
-    'l,r,r,lR,l,f,r,Fr,r,f,r,fr',
-    'f,r,r,f,r,r',
-    'l,r,r,lR,l,f,r,Fr,r,f,r,fr'
+    'begin,f,l,r,lr,lf,rf,flr,end', //all tiles one of each
+    'l,r,r,l(f,f)r,l,f,r,f,r,f,r,r(f)l(begin)f',
+    'r,r,l(f)r(f)f,r(f)l,l',
+    'f,r,r,f,l(l)r(r)f,l(r)r,r',
+    'f,r,r,f,l(l)r(r)f,f,lr,rl,lr',
+    'f,rl',
+    'f,r(f)l,r',
+    // 'l(r,l)f,f',
+    // 'l(r,l)r,f',
+    // 'f,r,r,l,l,rf,f',
+    // 'f,r',
+    // 'r,l(f,l)f,l,f,l',
+    // 'l(f,l)f,f',
+    // 'f,f,f,r',
+    // 'l(f)r(f)f',
 ];
 const track = tracks[tracks.length - 1];
-const trackOffset = [tileSize / 2, 0, 0];
-const tiles = parseTrack({ track, direction: 0, offset: trackOffset });
+// const trackOffset = [tileSize / 2, 0, 0];
+const trackOffset = [0, 0, 0];
+// let angle = Math.PI;
+let angle = 0;
+const tiles = parseTrack({ track, angle, offset: trackOffset, reverse: false });
 
 let state = {
     player: {
@@ -116,15 +129,15 @@ let players = states.map((state, index) =>
 );
 regl.clear({ color: [0, 0, 0, 1] });
 drawTrack({ tiles, view, projection });
-drawPlayer(players);
+// drawPlayer(players);
 
 let frameCount = 0;
-const secondFrame = regl.frame(() => {
-    // console.log('foo')
-    // drawPlayer([players[frameCount], players[(frameCount + 32) % players.length]]);
-    // drawPlayer([players[frameCount], players[(frameCount + 24) % players.length]]);
-    drawPlayer(players[frameCount]);
-    // drawPlayer(players.filter((p,i) => (frameCount == i)));
-    frameCount = (frameCount + 1) % players.length;
-    // secondFrame.cancel();
-});
+// const secondFrame = regl.frame(() => {
+    // // console.log('foo')
+    // // drawPlayer([players[frameCount], players[(frameCount + 32) % players.length]]);
+    // // drawPlayer([players[frameCount], players[(frameCount + 24) % players.length]]);
+    // drawPlayer(players[frameCount]);
+    // // drawPlayer(players.filter((p,i) => (frameCount == i)));
+    // frameCount = (frameCount + 1) % players.length;
+    // // secondFrame.cancel();
+// });
