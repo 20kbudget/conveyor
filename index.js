@@ -1,7 +1,7 @@
 // @flow
 const regl = require('regl')();
+
 const identity = require('gl-mat4/identity');
-const scale = require('gl-mat4/scale');
 const perspective = require('gl-mat4/perspective');
 const lookAt = require('gl-mat4/lookAt');
 const rotateZ = require('gl-mat4/rotateZ');

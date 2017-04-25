@@ -102,7 +102,7 @@ const draw = regl({
         projection: (context, { projection }) => projection(context),
         color: regl.prop('color')
     },
-    lineWidth: 2,
+    lineWidth: Math.min(2, regl.limits.lineWidthDims[1]),
     vert: `
     // current vertex
     attribute vec3 position;

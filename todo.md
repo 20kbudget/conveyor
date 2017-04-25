@@ -2,7 +2,7 @@
 
 #### April 22-27
 
-- player animation without jumping
+- * player animation without jumping
 - jump to different track tiles
 - publish alpha on itch.io
 - TDAH Talk about the game
@@ -12,7 +12,7 @@
 
 - [ ] player
     - [ ] move
-        - [ ] update opsition based on current tile / position instead of precalculating all states
+        - * [ ] update opsition based on current tile / position instead of precalculating all states
         - [x] update player position on enterFrame
         - [x] lineMove state reducer
         - [x] curveMove state reducer
