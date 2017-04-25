@@ -94,6 +94,27 @@ const lineMove: LineMove = ({
     return nextState;
 };
 
+const printLinePath: PrintLinePath = (distance, angle, states, steps) => {
+    let newState = states[states.length - 1];
+    const playerState = newState.player;
+    const startPosition = playerState.position;
+
+    // for (let count = 0; count < steps/2; count++) {
+    for (let count = 0; count <= steps; count++) {
+        let newPlayerState = lineMove({
+            state: playerState,
+            progress: count / steps,
+            distance,
+            angle,
+            startPosition
+        });
+        newState = extend(newState, { player: newPlayerState });
+        states.push(newState);
+    }
+    return newState;
+};
+
+const roundDecimals = (n, p) => Math.round(n * p) / p;
 const curveMove = ({
     state,
     center,
@@ -105,32 +126,16 @@ const curveMove = ({
     progress
 }) => {
     const curveProgress = progress * curveAngle * direction;
-    const angle = rad(startAngle + curveProgress);
-    const playerAngle = rad(playerStartAngle + curveProgress);
-    const x = center[0] + radius * Math.cos(angle);
-    const y = center[1] + radius * Math.sin(angle);
+    const angle = startAngle + curveProgress;
+    const playerAngle = playerStartAngle + curveProgress;
+    const x = center[0] + radius * Math.cos(rad(angle));
+    const y = center[1] + radius * Math.sin(rad(angle));
     const newPosition = [x, y, 0];
-    return extend(state, { position: newPosition, angleZ: playerAngle });
-};
-
-const printLinePath: PrintLinePath = (distance, angle, states, steps) => {
-    const playerState = states[states.length - 1].player;
-    let state = playerState;
-    const startPosition = playerState.position;
-    // for (let count = 0; count < steps/2; count++) {
-    for (let count = 0; count <= steps; count++) {
-        state = extend(state, {
-            player: lineMove({
-                state: playerState,
-                progress: count / steps,
-                distance,
-                angle,
-                startPosition
-            })
-        });
-        states.push(extend(state));
-    }
-    return state;
+    let newPlayerState = extend(state, {
+        position: newPosition,
+        angleZ: playerAngle
+    });
+    return newPlayerState;
 };
 
 const trailDebug: TrailDebug = (
@@ -142,25 +147,25 @@ const trailDebug: TrailDebug = (
     playerStartAngle,
     direction
 ) => {
-    const playerState = states[states.length - 1].player;
-    let state = playerState;
+    let newState = states[states.length - 1];
+    const playerState = newState.player;
     // for (let count = 0; count < steps/2; count++) {
     for (let count = 0; count <= steps; count++) {
-        state = extend(state, {
-            player: curveMove({
-                state: playerState,
-                center,
-                startAngle,
-                playerStartAngle,
-                progress: count / steps,
-                radius,
-                curveAngle: 90,
-                direction
-            })
+        let newPlayerState = curveMove({
+            state: playerState,
+            center,
+            startAngle,
+            playerStartAngle,
+            progress: count / steps,
+            radius,
+            curveAngle: 90,
+            direction
         });
-        states.push(extend(state));
+        newState = extend(newState, { player: newPlayerState });
+        // states.push(extend(state));
+        states.push(newState);
     }
-    return state;
+    return newState;
 };
 module.exports = {
     drawPlayer: draw,

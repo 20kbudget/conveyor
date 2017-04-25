@@ -76,15 +76,17 @@ const shortTileNames = {
 
     l: 'left',
     fl: 'forwardLeft',
-    rl: 'leftRight',
     frl: 'forwardLeftRight',
     rfl: 'forwardLeftRight',
 
     r: 'right',
-    lr: 'leftRight',
     fr: 'forwardRight',
     flr: 'forwardLeftRight',
-    lfr: 'forwardLeftRight'
+    lfr: 'forwardLeftRight',
+
+    
+    bl: 'leftRight',
+    br: 'leftRight',
 };
 
 const draw = regl({
