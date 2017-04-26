@@ -13,7 +13,8 @@ const scale = require('gl-mat4/scale');
 const rotateZ = require('gl-mat4/rotateZ');
 const translate = require('gl-mat4/translate');
 const { drawTile, shortTileNames } = require('./trackTile');
-const { lineMove, curveMove } = require('./animations');
+const { tileAnimations } = require('./animations');
+const angle = require('gl-vec3/angle');
 
 const trackScale = [4, 4, 1];
 const trackColor = [0.5, 0.5, 0.5, 1.0];
@@ -37,15 +38,25 @@ const drawTrack: DrawTrack = ({ tiles, view, projection }) =>
         }))
     );
 
-type GetTileAnimation = ({
-    position: Vec3,
-    tiles: TrackTile[]
+type FindTileAnimation = ({
+    entry: Vec3,
+    center: Vec3,
+    track: TrackTile[]
 }) => Function;
 
-const getTileAnimation:GetTileAnimation = ({position, tiles}) => {
-    return lineMove;
-}
-
+const findTileAnimation: FindTileAnimation = ({ entry, center, track }) => {
+    const entryAngle = angle(entry, center);
+    console.log({ entryAngle });
+    const matchingTile = track.find(
+        tile =>
+            tile.offset.toString() !== track.toString() &&
+            tileAnimations[tile.name].find(
+                move => move.entry === entryAngle + tile.angle
+            ) !== undefined
+    );
+    console.log({ matchingTile });
+    return matchingTile ? tileAnimations[matchingTile.name].animation : () => null;
+};
 
 module.exports = {
     drawTrack

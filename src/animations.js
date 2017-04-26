@@ -39,28 +39,32 @@ const lineMove: LineMove = ({
     return nextState;
 };
 
-type CurveMove = ({
+type CurveParams = {
     state: PlayerState,
     center: Vec3,
     radius: number,
-    curveAngle: number,
-    direction: number,
-    startAngle: number,
+    rotation: number,
     playerStartAngle: number,
     progress: number
+}
+type CurveMove = (CurveParams & {
+    curveAngle?: number,
+    direction?: number
 }) => PlayerState;
+type CurveRight = (CurveParams) => PlayerState;
+type CurveLeft = (CurveParams) => PlayerState;
 const curveMove: CurveMove = ({
     state,
     center,
     radius,
-    curveAngle = 90,
-    direction = DIRECTION_CCW,
-    startAngle,
+    rotation,
     playerStartAngle,
-    progress
+    progress,
+    curveAngle = 90,
+    direction = DIRECTION_CCW
 }) => {
     const curveProgress = progress * curveAngle * direction;
-    const angle = startAngle + curveProgress;
+    const angle = rotation + curveProgress;
     const playerAngle = playerStartAngle + curveProgress;
     const x = center[0] + radius * Math.cos(rad(angle));
     const y = center[1] + radius * Math.sin(rad(angle));
@@ -72,7 +76,62 @@ const curveMove: CurveMove = ({
     return newPlayerState;
 };
 
+const curveRight:CurveRight = ({
+    state,
+    center,
+    radius,
+    rotation,
+    playerStartAngle,
+    progress
+}) =>
+    curveMove({
+        state,
+        center,
+        radius,
+        rotation,
+        playerStartAngle,
+        progress,
+        direction: DIRECTION_CW
+    });
+
+const curveLeft:CurveLeft = ({
+    state,
+    center,
+    radius,
+    curveAngle,
+    rotation,
+    playerStartAngle,
+    progress
+}) =>
+    curveMove({
+        state,
+        center,
+        radius,
+        curveAngle: 90,
+        direction: DIRECTION_CCW,
+        rotation,
+        playerStartAngle,
+        progress
+    });
+
+const moves = {
+    forward: { entry: 180, animation: lineMove },
+    left: { entry: 90, animation: curveLeft },
+    right: { entry: 270, animation: curveRight }
+};
+const tileAnimations = {
+    forward: [moves.forward],
+    left: [moves.left],
+    right: [moves.right],
+    leftRight: [moves.left, moves.right],
+    forwardLeft: [moves.forward, moves.left],
+    forwardRight: [moves.forward, moves.right],
+    forwardLeftRight: [moves.forward, moves.left, moves.right]
+};
+
 module.exports = {
+    tileAnimations,
+
     lineMove,
     curveMove,
     DIRECTION_CW,

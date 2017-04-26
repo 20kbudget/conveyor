@@ -84,9 +84,8 @@ const shortTileNames = {
     flr: 'forwardLeftRight',
     lfr: 'forwardLeftRight',
 
-    
     bl: 'leftRight',
-    br: 'leftRight',
+    br: 'leftRight'
 };
 
 const draw = regl({

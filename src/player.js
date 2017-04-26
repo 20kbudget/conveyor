@@ -90,7 +90,7 @@ const trailDebug: TrailDebug = (
     steps,
     radius,
     center,
-    startAngle,
+    rotation,
     playerStartAngle,
     direction
 ) => {
@@ -101,7 +101,7 @@ const trailDebug: TrailDebug = (
         let newPlayerState = curveMove({
             state: playerState,
             center,
-            startAngle,
+            rotation,
             playerStartAngle,
             progress: count / steps,
             radius,
