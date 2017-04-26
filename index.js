@@ -7,15 +7,10 @@ const lookAt = require('gl-mat4/lookAt');
 const rotateZ = require('gl-mat4/rotateZ');
 const translate = require('gl-mat4/translate');
 const { vecSum } = require('./src/vectors');
-const { drawTrack, parseTrack } = require('./src/track');
-const {
-    drawPlayer,
-    lineMove,
-    printLinePath,
-    trailDebug,
-    DIRECTION_CW,
-    DIRECTION_CCW
-} = require('./src/player');
+const { drawTrack } = require('./src/track');
+const parseTrack = require('./src/trackParser');
+const { DIRECTION_CW, DIRECTION_CCW } = require('./src/animations');
+const { drawPlayer, printLinePath, trailDebug } = require('./src/player');
 
 const cameraDistance = 50;
 

@@ -11,19 +11,6 @@ type PlayerDrawArgs = {
 };
 type PlayerDraw = (PlayerDrawArgs | PlayerDrawArgs[]) => void;
 
-type PlayerState = {
-    position: Vec3,
-    angleZ: number
-};
-
-type LineMove = ({
-    state: PlayerState,
-    startPosition: Vec3,
-    progress: number,
-    distance: number,
-    angle: number
-}) => PlayerState;
-
 type PrintLinePath = (
     distance: number,
     angle: number,
@@ -43,11 +30,12 @@ type TrailDebug = (
 
 const regl = require('regl')();
 const extend = require('xtend');
-const { vecSum } = require('./vectors');
-
-const DIRECTION_CW = -1;
-const DIRECTION_CCW = 1;
-const tileSize = 8 * 8 / 10;
+const {
+    lineMove,
+    curveMove,
+    DIRECTION_CCW,
+    DIRECTION_CW
+} = require('./animations');
 
 const draw: PlayerDraw = regl({
     uniforms: {
@@ -76,24 +64,6 @@ const draw: PlayerDraw = regl({
     }`
 });
 
-const rad = degree => degree * Math.PI / 180;
-const lineMove: LineMove = ({
-    state,
-    progress,
-    startPosition,
-    distance = tileSize,
-    angle = 0
-}) => {
-    let nextState = state;
-    const totalLength = progress * distance;
-    const x = Math.cos(rad(angle)) * totalLength;
-    const y = Math.sin(rad(angle)) * totalLength;
-    const offset = [x, y, 0];
-    const position = vecSum(startPosition, offset);
-    nextState = extend(state, { position });
-    return nextState;
-};
-
 const printLinePath: PrintLinePath = (distance, angle, states, steps) => {
     let newState = states[states.length - 1];
     const playerState = newState.player;
@@ -115,29 +85,6 @@ const printLinePath: PrintLinePath = (distance, angle, states, steps) => {
 };
 
 const roundDecimals = (n, p) => Math.round(n * p) / p;
-const curveMove = ({
-    state,
-    center,
-    radius,
-    curveAngle = 90,
-    direction = DIRECTION_CCW,
-    startAngle,
-    playerStartAngle,
-    progress
-}) => {
-    const curveProgress = progress * curveAngle * direction;
-    const angle = startAngle + curveProgress;
-    const playerAngle = playerStartAngle + curveProgress;
-    const x = center[0] + radius * Math.cos(rad(angle));
-    const y = center[1] + radius * Math.sin(rad(angle));
-    const newPosition = [x, y, 0];
-    let newPlayerState = extend(state, {
-        position: newPosition,
-        angleZ: playerAngle
-    });
-    return newPlayerState;
-};
-
 const trailDebug: TrailDebug = (
     states,
     steps,
