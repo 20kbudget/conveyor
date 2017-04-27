@@ -6,6 +6,34 @@ type PlayerState = {
     angleZ: number
 };
 
+type LineMove = ({
+    state: PlayerState,
+    startPosition: Vec3,
+    progress: number,
+    distance: number,
+    angle: number
+}) => PlayerState;
+
+type CurveParams = {
+    state: PlayerState,
+    center: Vec3,
+    radius: number,
+    rotation: number,
+    playerStartAngle: number,
+    progress: number
+};
+
+type CurveMove = (
+    CurveParams & {
+        curveAngle?: number,
+        direction?: number
+    }
+) => PlayerState;
+
+type CurveRight = CurveParams => PlayerState;
+
+type CurveLeft = CurveParams => PlayerState;
+
 const add = require('gl-vec3/add');
 const extend = require('xtend');
 
@@ -14,14 +42,6 @@ const DIRECTION_CCW = 1;
 const tileSize = 8 * 8 / 10;
 
 const rad = degree => degree * Math.PI / 180;
-
-type LineMove = ({
-    state: PlayerState,
-    startPosition: Vec3,
-    progress: number,
-    distance: number,
-    angle: number
-}) => PlayerState;
 
 const lineMove: LineMove = ({
     state,
@@ -39,20 +59,6 @@ const lineMove: LineMove = ({
     return nextState;
 };
 
-type CurveParams = {
-    state: PlayerState,
-    center: Vec3,
-    radius: number,
-    rotation: number,
-    playerStartAngle: number,
-    progress: number
-}
-type CurveMove = (CurveParams & {
-    curveAngle?: number,
-    direction?: number
-}) => PlayerState;
-type CurveRight = (CurveParams) => PlayerState;
-type CurveLeft = (CurveParams) => PlayerState;
 const curveMove: CurveMove = ({
     state,
     center,
@@ -76,43 +82,21 @@ const curveMove: CurveMove = ({
     return newPlayerState;
 };
 
+// prettier-ignore
 const curveRight:CurveRight = ({
-    state,
-    center,
-    radius,
-    rotation,
-    playerStartAngle,
-    progress
-}) =>
-    curveMove({
-        state,
-        center,
-        radius,
-        rotation,
-        playerStartAngle,
-        progress,
-        direction: DIRECTION_CW
-    });
+    state, center, radius, rotation, playerStartAngle, progress
+}) => curveMove({
+    state, center, radius, rotation, playerStartAngle, progress,
+    direction: DIRECTION_CW
+});
 
+// prettier-ignore
 const curveLeft:CurveLeft = ({
-    state,
-    center,
-    radius,
-    curveAngle,
-    rotation,
-    playerStartAngle,
-    progress
-}) =>
-    curveMove({
-        state,
-        center,
-        radius,
-        curveAngle: 90,
-        direction: DIRECTION_CCW,
-        rotation,
-        playerStartAngle,
-        progress
-    });
+    state, center, radius, curveAngle, rotation, playerStartAngle, progress
+}) => curveMove({
+    state, center, radius, rotation, playerStartAngle, progress,
+    curveAngle: 90, direction: DIRECTION_CCW,
+});
 
 const moves = {
     forward: { entry: 180, animation: lineMove },
@@ -131,7 +115,6 @@ const tileAnimations = {
 
 module.exports = {
     tileAnimations,
-
     lineMove,
     curveMove,
     DIRECTION_CW,

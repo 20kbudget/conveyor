@@ -7,23 +7,28 @@ export type TrackTile = {
     angle: number
 };
 
-const identity = require('gl-mat4/identity');
-const multiply = require('gl-mat4/multiply');
-const scale = require('gl-mat4/scale');
-const rotateZ = require('gl-mat4/rotateZ');
-const translate = require('gl-mat4/translate');
-const { drawTile, shortTileNames } = require('./trackTile');
-const { tileAnimations } = require('./animations');
-const angle = require('gl-vec3/angle');
-
-const trackScale = [4, 4, 1];
-const trackColor = [0.5, 0.5, 0.5, 1.0];
-
 type DrawTrack = ({
     tiles: TrackTile[],
     view: Mat4,
     projection: ProjectionFn
 }) => void;
+
+type GetTilePath = ({
+    entry: Vec3,
+    center: Vec3,
+    track: TrackTile[]
+}) => Function;
+
+const identity = require('gl-mat4/identity');
+const scale = require('gl-mat4/scale');
+const rotateZ = require('gl-mat4/rotateZ');
+const translate = require('gl-mat4/translate');
+const { drawTile } = require('./trackTile');
+const { tileAnimations } = require('./animations');
+const getAngle = require('gl-vec3/angle');
+
+const trackScale = [4, 4, 1];
+const trackColor = [0.5, 0.5, 0.5, 1.0];
 
 const drawTrack: DrawTrack = ({ tiles, view, projection }) =>
     drawTile(
@@ -38,14 +43,8 @@ const drawTrack: DrawTrack = ({ tiles, view, projection }) =>
         }))
     );
 
-type FindTileAnimation = ({
-    entry: Vec3,
-    center: Vec3,
-    track: TrackTile[]
-}) => Function;
-
-const findTileAnimation: FindTileAnimation = ({ entry, center, track }) => {
-    const entryAngle = angle(entry, center);
+const getTilePath: GetTilePath = ({ entry, center, track }) => {
+    const entryAngle = getAngle(entry, center);
     console.log({ entryAngle });
     const matchingTile = track.find(
         tile =>
@@ -55,9 +54,12 @@ const findTileAnimation: FindTileAnimation = ({ entry, center, track }) => {
             ) !== undefined
     );
     console.log({ matchingTile });
-    return matchingTile ? tileAnimations[matchingTile.name].animation : () => null;
+    return matchingTile
+        ? tileAnimations[matchingTile.name].animation
+        : () => null;
 };
 
 module.exports = {
-    drawTrack
+    drawTrack,
+    getTilePath
 };
