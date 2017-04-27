@@ -19,6 +19,7 @@ const extend = require('xtend');
       . . . . . . . . . . .     . . . . . . . . . . .    .  .  .  .  .  .  .  .  .  .  .
 */
 const gridToVertex = (x, y) => [-1 + 2 / 10 * x, 1 - 2 / 10 * y, 0];
+// prettier-ignore
 const gridPoints = [
     [3, 1], [7, 1],
     [5, 2], [7, 2],
@@ -55,6 +56,7 @@ forwardLeftRight, begin, end
    . + .   . . .   . . .
 
 */
+// prettier-ignore
 const tiles = {
     forward: [[8, 11], [11, 16], [16, 12], [12, 9], [9, 4], [4, 8]],
     left: [ [8, 11], [11, 16], [16, 14], [14, 5], [5, 0], [0, 2], [2, 1], [1, 3], [3, 7], [7, 8] ],
