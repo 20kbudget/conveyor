@@ -6,8 +6,9 @@ const perspective = require('gl-mat4/perspective');
 const lookAt = require('gl-mat4/lookAt');
 const rotateZ = require('gl-mat4/rotateZ');
 const translate = require('gl-mat4/translate');
-const { vecSum } = require('./src/vectors');
-const { drawTrack } = require('./src/track');
+const add = require('gl-vec3/add');
+const subtract = require('gl-vec3/subtract');
+const { drawTrack, getTilePath } = require('./src/track');
 const parseTrack = require('./src/trackParser');
 const { DIRECTION_CW, DIRECTION_CCW } = require('./src/animations');
 const { drawPlayer, printLinePath, trailDebug } = require('./src/player');
@@ -26,6 +27,13 @@ const tracks = [
     'l,r,r,r,l,l,r,r,r,l,l,r,r,r,l,l,r,r,r,l', // X
     'begin,f,l,r,lr,lf,rf,flr,end', //all tiles one of each
     'l,r,r,b(f,f,bl)r,l,f,r,r(f)f,f,r,f,r,r(f)l(l,f)f,f'
+    // 'f,l,r,fr',
+    // 'l',
+    // 'f,f,l',
+    // 'b(f,l,f)r,l'
+    // 'r,r'
+    // 'r,b(l)r'
+    // 'f(l)r'
     // 'r,r,l(f)r(f)f,b(f)l,f',
     // 'begin,r,r,f,l(l,begin)r(r)f,b(r,begin)r,r',
     // 'f,r,r,f,l(l)r(r)f,f,b(l)r,l,l',
@@ -43,13 +51,21 @@ const tracks = [
 ];
 const track = tracks[tracks.length - 1];
 const halfTile = tileSize / 2;
-const trackOffset = [-tileSize / 6, 0, 0];
-let angle = 0;
-const tiles = parseTrack({ track, angle, offset: trackOffset, reverse: false });
+const trackOffset = [0, 0, 0];
+// const playerOffset = trackOffset
+// const trackOffset = [tileSize * 0.8, 0, 0];
+const playerOffset = subtract([], trackOffset, [halfTile, 0, 0]);
+const tiles = parseTrack({
+    track,
+    angle: 0,
+    offset: trackOffset,
+    reverse: false
+});
+// const tiles = parseTrack({ track, angle: 180, offset: trackOffset, reverse: true });
 
 let state = {
     player: {
-        position: vecSum(trackOffset, [halfTile, 0, 0]),
+        position: playerOffset,
         angleZ: 0
     }
 };
@@ -80,102 +96,23 @@ let states = [state];
 let lineDebugParams = [states, steps, radius];
 let debugParams = [states, curveSteps, radius];
 
-let center = vecSum(state.player.position, [0, radius, 0]);
-state = trailDebug(
-    ...debugParams,
-    center,
-    -90,
-    state.player.angleZ,
-    DIRECTION_CCW
-);
-
-center = vecSum(state.player.position, [radius, 0, 0]);
-state = trailDebug(
-    ...debugParams,
-    center,
-    -180,
-    state.player.angleZ,
-    DIRECTION_CW
-);
-
-center = vecSum(state.player.position, [0, -radius, 0]);
-state = trailDebug(
-    ...debugParams,
-    center,
-    90,
-    state.player.angleZ,
-    DIRECTION_CW
-);
-
-center = vecSum(state.player.position, [-radius, 0, 0]);
-state = trailDebug(
-    ...debugParams,
-    center,
-    0,
-    state.player.angleZ,
-    DIRECTION_CW
-);
-
-center = vecSum(state.player.position, [0, -radius, 0]);
-state = trailDebug(
-    ...debugParams,
-    center,
-    90,
-    state.player.angleZ,
-    DIRECTION_CCW
-);
-
-state = printLinePath(tileSize, -90, ...lineDebugParams);
-
-center = vecSum(state.player.position, [-radius, 0, 0]);
-state = trailDebug(
-    ...debugParams,
-    center,
-    0,
-    state.player.angleZ,
-    DIRECTION_CW
-);
-
-state = printLinePath(tileSize, -180, ...lineDebugParams);
-state = printLinePath(tileSize, -180, ...lineDebugParams);
-
-center = vecSum(state.player.position, [0, radius, 0, 0]);
-state = trailDebug(
-    ...debugParams,
-    center,
-    -90,
-    state.player.angleZ,
-    DIRECTION_CW
-);
-
-state = printLinePath(tileSize, 90, ...lineDebugParams);
-
-center = vecSum(state.player.position, [radius, 0, 0]);
-state = trailDebug(
-    ...debugParams,
-    center,
-    -180,
-    state.player.angleZ,
-    DIRECTION_CW
-);
-
-state = printLinePath(tileSize, 0.1, ...lineDebugParams);
-state = printLinePath(tileSize, 0, ...lineDebugParams);
-
+regl.clear({ color: [0, 0, 0, 1] });
+drawTrack({ tiles, view, projection });
 let players = states.map((state, index) =>
     drawPlayerParams(state.player, index)
 );
-regl.clear({ color: [0, 0, 0, 1] });
-drawTrack({ tiles, view, projection });
-// drawPlayer(players);
+drawPlayer(players);
 
-let frameCount = 0;
-const secondFrame = regl.frame(() => {
-    // console.log('foo')
-    // drawPlayer([players[frameCount], players[(frameCount + 32) % players.length]]);
-    // drawPlayer([players[frameCount], players[(frameCount + 24) % players.length]]);
-    drawPlayer(players[frameCount]);
-    // drawPlayer(players.filter((p,i) => (frameCount == i)));
-    frameCount = (frameCount + 1) % players.length;
-    // secondFrame.cancel();
+getTilePath({
+    center: trackOffset,
+    entry: playerOffset,
+    // center: add([], trackOffset, [tileSize, 0, 0]),
+    // entry: add([], playerOffset, [tileSize, 0, 0]),
+    // center: add([], trackOffset, [tileSize, tileSize, 0]),
+    // entry: add([], trackOffset, [tileSize, halfTile, 0]),
+    // center: add([], trackOffset, [2 * tileSize, tileSize, 0]),
+    // entry: add([], trackOffset, [tileSize + halfTile, tileSize, 0]),
+    // center: trackOffset,
+    // entry: playerOffset,
+    track: tiles
 });

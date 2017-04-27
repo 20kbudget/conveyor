@@ -3,21 +3,25 @@ import type { Vec3 } from './basicTypes';
 import type { TrackTile } from './track';
 
 const balanced = require('balanced-match');
+const add = require('gl-vec3/add');
+const subtract = require('gl-vec3/subtract');
 const { shortTileNames } = require('./trackTile');
 
 const tileSize = 2 * 8 / 10;
 const trackScale = [4, 4, 1];
+
+const rad = degrees => degrees * Math.PI / 180;
 
 const outputRotation = inputName => {
     const name = inputName.toLowerCase();
     const lastLetter = name.slice(-1);
     switch (lastLetter) {
         case 'r':
-            return -Math.PI / 2;
+            return -90;
         case 'l':
-            return Math.PI / 2;
+            return 90;
         case 'b':
-            return Math.PI;
+            return 180;
         default:
             return 0;
     }
@@ -30,6 +34,13 @@ type ParseTrack = ({
     reverse?: boolean,
     branchTileName?: string
 }) => TrackTile[];
+
+const offsetAfterTile = angle => {
+    let x = tileSize * trackScale[0] * Math.round(Math.cos(rad(angle)));
+    let y = tileSize * trackScale[1] * Math.round(Math.sin(rad(angle)));
+    let z = 0;
+    return [x, y, z];
+};
 
 const parseTrack: ParseTrack = ({
     track,
@@ -54,32 +65,27 @@ const parseTrack: ParseTrack = ({
         let shortNames = pre.split(',');
         preBranchTiles = shortNames.reduce((acc, shortName, index) => {
             const name = shortTileNames[shortName.toLowerCase()] || shortName;
-            const isBranchTurn =
+            const isBranchTile =
                 body != null && index === shortNames.length - 1;
-            let x = tileSize * trackScale[0] * Math.round(Math.cos(angle));
-            let y = tileSize * trackScale[1] * Math.round(Math.sin(angle));
-            let z = 0;
             let angleOffset = outputRotation(shortName);
-            if (reverse) {
-                x *= -1;
-                y *= -1;
-            }
-            if (reverse || isBranchTurn) {
+            if (reverse || isBranchTile) {
                 angleOffset *= -1;
             }
             nextAngle = angle + angleOffset;
-            nextOffset = [offset[0] + x, offset[1] + y, offset[2] + z];
+            nextOffset = reverse || isBranchTile
+                ? subtract([], offset, offsetAfterTile(nextAngle))
+                : add([], offset, offsetAfterTile(nextAngle));
 
-            if (isBranchTurn) {
+            if (isBranchTile) {
                 branchTileName += shortName;
                 return acc;
             }
-            offset = nextOffset;
             const nextTile = {
                 name,
                 offset,
                 angle: reverse ? angle : nextAngle
             };
+            offset = nextOffset;
             angle = nextAngle;
             return acc.concat(nextTile);
         }, []);

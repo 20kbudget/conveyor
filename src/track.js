@@ -26,16 +26,20 @@ const translate = require('gl-mat4/translate');
 const { drawTile } = require('./trackTile');
 const { tileAnimations } = require('./animations');
 const getAngle = require('gl-vec3/angle');
+const subtract = require('gl-vec3/subtract');
 
 const trackScale = [4, 4, 1];
 const trackColor = [0.5, 0.5, 0.5, 1.0];
+
+const degrees = rad => rad * 180 / Math.PI;
+const rad = degrees => degrees * Math.PI / 180;
 
 const drawTrack: DrawTrack = ({ tiles, view, projection }) =>
     drawTile(
         tiles.map(tile => ({
             name: tile.name,
             color: trackColor,
-            rotation: rotateZ([], identity([]), tile.angle),
+            rotation: rotateZ([], identity([]), rad(tile.angle)),
             translation: translate([], identity([]), tile.offset),
             scaling: scale([], identity([]), trackScale),
             view,
@@ -44,19 +48,34 @@ const drawTrack: DrawTrack = ({ tiles, view, projection }) =>
     );
 
 const getTilePath: GetTilePath = ({ entry, center, track }) => {
-    const entryAngle = getAngle(entry, center);
-    console.log({ entryAngle });
-    const matchingTile = track.find(
-        tile =>
-            tile.offset.toString() !== track.toString() &&
-            tileAnimations[tile.name].find(
-                move => move.entry === entryAngle + tile.angle
-            ) !== undefined
-    );
+    const entryAngleRad = getAngle(subtract([], entry, center), [1, 0, 0]);
+    const entryAngle = degrees(entryAngleRad) * (entry[1] < center[1] ? -1 : 1);
+    // console.log(entryAngleRad)
+    // console.log(entryAngle);
+    // console.log(center);
+    // console.log(entry);
+    // console.log({tileAnimations})
+    // const matchingTile = track.find(tile => {
+    const sameCenterTiles = track.filter(tile => {
+        const hasSameCenter = tile.offset.toString() === center.toString();
+        return hasSameCenter;
+    });
+    console.log({ sameCenterTiles });
+    const matchingTile = sameCenterTiles.find(tile => {
+        const sameEntryAnimation = tileAnimations[tile.name].find(
+            a => a.entry === entryAngle - tile.angle
+        );
+        console.log(
+            tile.name,
+            tile.angle,
+            entryAngle,
+            entryAngle - tile.angle,
+            sameEntryAnimation
+        );
+        return sameEntryAnimation !== undefined;
+    });
     console.log({ matchingTile });
-    return matchingTile
-        ? tileAnimations[matchingTile.name].animation
-        : () => null;
+    return matchingTile !== undefined ? matchingTile.animation : () => null;
 };
 
 module.exports = {
