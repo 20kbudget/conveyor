@@ -11,7 +11,7 @@ const subtract = require('gl-vec3/subtract');
 const { drawTrack, getTilePath } = require('./src/track');
 const parseTrack = require('./src/trackParser');
 const { DIRECTION_CW, DIRECTION_CCW } = require('./src/animations');
-const { drawPlayer, printLinePath, trailDebug } = require('./src/player');
+const { drawPlayer } = require('./src/player');
 
 // const cameraDistance = 50;
 const cameraDistance = 130;
@@ -28,6 +28,7 @@ const tracks = [
     'l,r,r,r,l,l,r,r,r,l,l,r,r,r,l,l,r,r,r,l', // INVALID X
     'l,r,f,r,r,f,l,l,f,r,r,f,r,l,l,r,r,r,l,l,r,r,r,l', // scissor
     'r(f,f)f,r,f,f,r,f,r(f,f)f,r,f,f,r,f', // simple map 1
+    'r(f,f)f,r,f,f,r,f,b(l,f,f,begin)r,f,f,r', // simple map easy
     // 'l,r,r,b(f)r,l,f,r,r(f)f,f,r,f,r,r(f)l(l,f)f,f', // nice map 1
     // 'l,r,r,b(f,l,r,l,f,f,r,l,l,l,r,r,r,l,l,l,r,f,l,r,l,r,l,f,f,f,r,l,f)r,l,f,r,r(f)f,f,r,f,r,r(f)l(l,f)f,f',
     // 'f,f,f,l,f,l,r(r,f,f,f)l(l,f,f,r,f,r,f,f,f)f,f,f,f,bl,f,r(f,f,f)f,r,f,f,f,r,l(r,r,l,r,f,f,f)f,r(f,f,f)f,b(l,f,f,f)r,f,f,f',
@@ -54,7 +55,10 @@ let state = {
         position: playerOffset,
         angleZ: 0,
         animations: {
-            move: null
+            move: {
+                progress: 0,
+                update: () => null
+            }
         }
     }
 };
@@ -84,9 +88,28 @@ regl.clear({ color: [0, 0, 0, 1] });
 drawTrack({ tiles, view, projection });
 
 console.log({ playerOffset });
-getTilePath({
-    position: playerOffset,
-    tileDimensions: [tileSize, tileSize, 0],
-    trackOffset,
-    track: tiles
-});
+let tick = regl.frame((context) => {
+    // console.log({context})
+    // console.log(context.tick);
+    console.log(context.time);
+    // const nextPlayer =
+    const nextState = {
+        // player: nextPlayer
+    }
+    getTilePath({
+        position: playerOffset,
+        tileDimensions: [tileSize, tileSize, 0],
+        trackOffset,
+        track: tiles
+    });
+})
+
+// stop after x seconds (dev-mode)
+window.setTimeout(() => {
+    tick.cancel();
+}, 2000)
+
+
+
+
+

@@ -64,7 +64,6 @@ const closestEntry = ({ position, tiles, tileDimensions }) => {
     const closestDistance = tiles.reduce(
         (acc, tile) => {
             const tileInputs = tileAnimations[tile.name];
-            console.log(tileInputs);
             let result = acc;
             tileInputs.forEach(t => {
                 const angle = rad(t.entry);
@@ -80,7 +79,6 @@ const closestEntry = ({ position, tiles, tileDimensions }) => {
         },
         { distance: Number.MAX_VALUE, vertex: [] }
     );
-    console.log({ closestDistance });
     return closestDistance.vertex;
 };
 
