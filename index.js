@@ -13,7 +13,8 @@ const parseTrack = require('./src/trackParser');
 const { DIRECTION_CW, DIRECTION_CCW } = require('./src/animations');
 const { drawPlayer, printLinePath, trailDebug } = require('./src/player');
 
-const cameraDistance = 50;
+// const cameraDistance = 50;
+const cameraDistance = 130;
 
 const tileSize = 8 * 8 / 10;
 const view = lookAt([], [0, 0, cameraDistance], [0, 0, 0], [0, 1.0, 0]);
@@ -24,40 +25,24 @@ const tracks = [
     'l,r,r,r,l', // convoluted turn
     'l,l,l,l', // INVALID only curves, minimal circle
     'l,r,r,r,l,r,r,r', // INVALID only curves, small 8
-    'l,r,r,r,l,l,r,r,r,l,l,r,r,r,l,l,r,r,r,l', // X
-    'begin,f,l,r,lr,lf,rf,flr,end', //all tiles one of each
-    'l,r,r,b(f,f,bl)r,l,f,r,r(f)f,f,r,f,r,r(f)l(l,f)f,f'
-    // 'f,l,r,fr',
-    // 'l',
-    // 'f,f,l',
-    // 'b(f,l,f)r,l'
-    // 'r,r'
-    // 'r,b(l)r'
-    // 'f(l)r'
-    // 'r,r,l(f)r(f)f,b(f)l,f',
-    // 'begin,r,r,f,l(l,begin)r(r)f,b(r,begin)r,r',
-    // 'f,r,r,f,l(l)r(r)f,f,b(l)r,l,l',
-    // 'f,b(f)l,r',
-    // 'f,b(f)r,r',
-    // 'f,r(f)b,r',
-    // 'l(r,l)f,f',
-    // 'l(r,l)r,f',
-    // 'f,r,r,l,l,rf,f',
-    // 'f,r',
-    // 'r,l(f,l)f,l,f,l',
-    // 'l(f,l)f,f',
-    // 'f,f,f,r',
-    // 'l(f)r(f)f',
+    'l,r,r,r,l,l,r,r,r,l,l,r,r,r,l,l,r,r,r,l', // INVALID X
+    'l,r,f,r,r,f,l,l,f,r,r,f,r,l,l,r,r,r,l,l,r,r,r,l', // scissor
+    'l,r,r,b(f,f,l,f,f,f,r,l,l,l,r,r,r,l,l,l,r,f,f,l,f,r,l,f)r,l,f,r,r(f)f,f,r,f,r,r(f)l(l,f)f,f', // nice map 1
+    // 'f,f,f,l,f,l,r(r,f,f,f)l(l,f,f,r,f,r,f,f,f)f,f,f,f,bl,f,r(f,f,f)f,r,f,f,f,r,l(r,r,l,r,f,f,f)f,r(f,f,f)f,b(l,f,f,f)r,f,f,f',
+    // 'f,f(r)l', // @BUG @TBD
+    // 'l(f,r,f,r,l,r,r,l,f,f,l)f,r,l,r(l,f,l,f)l(l,f,r,r,f,f,br,r)f,r,f,r,f,f,f,l,r,r,r,l,f,f,l,r,r,r,l',// meh, not great..
+
 ];
 const track = tracks[tracks.length - 1];
 const halfTile = tileSize / 2;
-// const trackOffset = [0, 0, 0];
-const trackOffset = [tileSize * 0.8, 0, 0];
+const trackOffset = [0, 0, 0];
+// const trackOffset = [+tileSize * 0.8, 0, 0];
 // const playerOffset = trackOffset
 const playerOffset = subtract([], trackOffset, [halfTile, 0, 0]);
 const tiles = parseTrack({
     track,
     angle: 0,
+    // angle: 90,
     offset: trackOffset,
     reverse: false
 });
