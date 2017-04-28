@@ -1,13 +1,50 @@
 // @flow
 import type { Vec3, Vec4, Mat4, ProjectionFn } from './basicTypes';
 import type { TrackTile } from './track';
-
 export type PlayerState = {
     position: Vec3,
     angleZ: number,
     animations: {
-        move?: Function
+        move: {
+            update: Function,
+            startTime: number,
+            duration: number,
+            progress: number
+        }
     }
+};
+
+const regl = require('regl')();
+const extend = require('xtend');
+const identity = require('gl-mat4/identity');
+const rotateZ = require('gl-mat4/rotateZ');
+const translate = require('gl-mat4/translate');
+const { lineMove, curveMove } = require('./animations');
+const { getTilePath } = require('./track');
+
+const rad = degree => degree * Math.PI / 180;
+
+type DrawPlayerParams = (
+    playerState: { position: Vec3, angleZ: number },
+    renderProperties: { view: Mat4, projection: Mat4 }
+) => PlayerDrawArgs;
+const drawPlayerParams: DrawPlayerParams = (
+    { position, angleZ },
+    { view, projection }
+) => {
+    const translation = translate([], identity([]), position);
+    const rotation = rotateZ([], identity([]), rad(angleZ));
+    const colorA = [0.8, 0.3, 0, 1];
+    const colorB = [1, 1, 0, 1];
+    // const color = angleZ % (Math.PI / 2) === 0 ? colorB : colorA;
+    const color = colorA;
+    return {
+        color,
+        translation,
+        rotation,
+        view,
+        projection
+    };
 };
 
 type PlayerDrawArgs = {
@@ -17,20 +54,7 @@ type PlayerDrawArgs = {
     view: Mat4,
     projection: ProjectionFn
 };
-
 type PlayerDraw = (PlayerDrawArgs | PlayerDrawArgs[]) => void;
-
-type UpdateMovement = ({
-    state: PlayerState,
-    nextTile: TrackTile,
-    track: TrackTile[]
-}) => PlayerState;
-
-const regl = require('regl')();
-const extend = require('xtend');
-const { lineMove, curveMove } = require('./animations');
-const { getTilePath } = require('./track');
-
 const draw: PlayerDraw = regl({
     uniforms: {
         translation: regl.prop('translation'),
@@ -58,17 +82,42 @@ const draw: PlayerDraw = regl({
     }`
 });
 
+// player state
+type CreatePlayerState = ({ position: Vec3 }) => PlayerState;
+const createPlayerState: CreatePlayerState = ({ position }) => ({
+    position,
+    angleZ: 0,
+    animations: {
+        move: {
+            progress: 1,
+            duration: 1,
+            startTime: 0,
+            update: state => state
+        }
+    }
+});
+
 // reducers
-// const updateMovement: UpdateMovement = ({ state, track, nextTile }) => {
-// const move = getTilePath({
-// position: state.position,
-// track
-// });
-// const animations = extend(state.animations, { move });
-// return extend(state, { animations });
-// };
+type UpdateMovement = ({
+    state: PlayerState,
+    trackOffset: Vec3,
+    track: TrackTile[]
+}) => PlayerState;
+const updateMovement: UpdateMovement = ({ state, track, trackOffset }) => {
+    const update = getTilePath({
+        position: state.position,
+        track,
+        trackOffset
+    });
+    console.log({ update });
+    const move = extend(state.animations.move, {update});
+    const animations = extend(state.animations, { move });
+    return extend(state, { animations });
+};
 
 module.exports = {
     drawPlayer: draw,
-    // updateMovement,
+    drawPlayerParams,
+    createPlayerState,
+    updateMovement
 };

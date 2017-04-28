@@ -4,21 +4,9 @@ import type { Vec3, Mat4, ProjectionFn } from './basicTypes';
 export type TrackTile = {
     name: string,
     offset: Vec3,
-    angle: number
+    angle: number,
+    speed: number
 };
-
-type DrawTrack = ({
-    tiles: TrackTile[],
-    view: Mat4,
-    projection: ProjectionFn
-}) => void;
-
-type GetTilePath = ({
-    position: Vec3,
-    track: TrackTile[],
-    tileDimensions?: Vec3,
-    trackOffset?: Vec3
-}) => Function;
 
 const identity = require('gl-mat4/identity');
 const scale = require('gl-mat4/scale');
@@ -38,6 +26,11 @@ const trackColor = [0.5, 0.5, 0.5, 1.0];
 const degrees = rad => rad * 180 / Math.PI;
 const rad = degrees => degrees * Math.PI / 180;
 
+type DrawTrack = ({
+    tiles: TrackTile[],
+    view: Mat4,
+    projection: ProjectionFn
+}) => void;
 const drawTrack: DrawTrack = ({ tiles, view, projection }) =>
     drawTile(
         tiles.map(tile => ({
@@ -82,31 +75,50 @@ const closestEntry = ({ position, tiles, tileDimensions }) => {
     return closestDistance.vertex;
 };
 
+type GetTilePath = ({
+    position: Vec3,
+    track: TrackTile[],
+    tileDimensions?: Vec3,
+    trackOffset?: Vec3
+}) => Function;
 const getTilePath: GetTilePath = ({
     position,
     tileDimensions = [tileSize, tileSize, 0],
     track,
     trackOffset = [0, 0, 0]
 }) => {
+    console.log('getTilePath', trackOffset, position)
     const center = closestTileCenter({ position, tileDimensions, trackOffset });
+    console.log({center})
     const sameCenterTiles = track.filter(tile => {
         const hasSameCenter = tile.offset.toString() === center.toString();
         return hasSameCenter;
     });
+    console.log({sameCenterTiles})
     const entry = closestEntry({
         position,
         tiles: sameCenterTiles,
         tileDimensions
     });
+    console.log({entry})
     const entryAngleRad = getAngle(subtract([], entry, center), [1, 0, 0]);
     const entryAngle = degrees(entryAngleRad) * (entry[1] < center[1] ? -1 : 1);
+    let animation = state => state;
     const matchingTile = sameCenterTiles.find(tile => {
         const sameEntryAnimation = tileAnimations[tile.name].find(
             a => a.entry === entryAngle - tile.angle
         );
-        return sameEntryAnimation !== undefined;
+        if (sameEntryAnimation === undefined) {
+            return false;
+        }
+        animation = sameEntryAnimation.animation;
+        return true;
     });
-    return matchingTile !== undefined ? matchingTile.animation : () => null;
+    console.log({matchingTile})
+    // if (matchingTile === undefined){
+        // return state => state;
+    // }
+    return animation;
 };
 
 module.exports = {

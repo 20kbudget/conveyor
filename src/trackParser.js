@@ -83,6 +83,8 @@ const parseTrack: ParseTrack = ({
             const nextTile = {
                 name,
                 offset,
+                // @TODO use different speeds for line vs curve
+                speed: 1,
                 angle: reverse ? angle : nextAngle
             };
             offset = nextOffset;

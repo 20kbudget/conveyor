@@ -46,6 +46,10 @@ const lineMove: LineMove = ({
     distance = tileSize,
     angle = 0
 }) => {
+    console.log('line move')
+    console.log({startPosition})
+    console.log({progress})
+    console.log({state})
     const totalLength = progress * distance;
     const x = Math.cos(rad(angle)) * totalLength;
     const y = Math.sin(rad(angle)) * totalLength;
