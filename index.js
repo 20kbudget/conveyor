@@ -27,7 +27,9 @@ const tracks = [
     'l,r,r,r,l,r,r,r', // INVALID only curves, small 8
     'l,r,r,r,l,l,r,r,r,l,l,r,r,r,l,l,r,r,r,l', // INVALID X
     'l,r,f,r,r,f,l,l,f,r,r,f,r,l,l,r,r,r,l,l,r,r,r,l', // scissor
-    'l,r,r,b(f,f,l,f,f,f,r,l,l,l,r,r,r,l,l,l,r,f,f,l,f,r,l,f)r,l,f,r,r(f)f,f,r,f,r,r(f)l(l,f)f,f', // nice map 1
+    'r(f,f)f,r,f,f,r,f,r(f,f)f,r,f,f,r,f', // simple map 1
+    // 'l,r,r,b(f)r,l,f,r,r(f)f,f,r,f,r,r(f)l(l,f)f,f', // nice map 1
+    // 'l,r,r,b(f,l,r,l,f,f,r,l,l,l,r,r,r,l,l,l,r,f,l,r,l,r,l,f,f,f,r,l,f)r,l,f,r,r(f)f,f,r,f,r,r(f)l(l,f)f,f',
     // 'f,f,f,l,f,l,r(r,f,f,f)l(l,f,f,r,f,r,f,f,f)f,f,f,f,bl,f,r(f,f,f)f,r,f,f,f,r,l(r,r,l,r,f,f,f)f,r(f,f,f)f,b(l,f,f,f)r,f,f,f',
     // 'f,f(r)l', // @BUG @TBD
     // 'l(f,r,f,r,l,r,r,l,f,f,l)f,r,l,r(l,f,l,f)l(l,f,r,r,f,f,br,r)f,r,f,r,f,f,f,l,r,r,r,l,f,f,l,r,r,r,l',// meh, not great..
