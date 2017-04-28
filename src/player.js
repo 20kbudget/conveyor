@@ -1,7 +1,15 @@
 // @flow
 import type { Vec3, Vec4, Mat4, ProjectionFn } from './basicTypes';
+import type { TrackTile } from './track';
 
-// Expected Properties
+export type PlayerState = {
+    position: Vec3,
+    angleZ: number,
+    animations: {
+        move?: Function
+    }
+};
+
 type PlayerDrawArgs = {
     color: Vec4,
     translation: Mat4,
@@ -9,7 +17,14 @@ type PlayerDrawArgs = {
     view: Mat4,
     projection: ProjectionFn
 };
+
 type PlayerDraw = (PlayerDrawArgs | PlayerDrawArgs[]) => void;
+
+type UpdateMovement = ({
+    state: PlayerState,
+    nextTile: TrackTile,
+    track: TrackTile[]
+}) => PlayerState;
 
 type PrintLinePath = (
     distance: number,
@@ -30,12 +45,8 @@ type TrailDebug = (
 
 const regl = require('regl')();
 const extend = require('xtend');
-const {
-    lineMove,
-    curveMove,
-    DIRECTION_CCW,
-    DIRECTION_CW
-} = require('./animations');
+const { lineMove, curveMove } = require('./animations');
+const { getTilePath } = require('./track');
 
 const draw: PlayerDraw = regl({
     uniforms: {
@@ -64,11 +75,22 @@ const draw: PlayerDraw = regl({
     }`
 });
 
+// reducers
+// const updateMovement: UpdateMovement = ({ state, track, nextTile }) => {
+// const move = getTilePath({
+// position: state.position,
+// track
+// });
+// const animations = extend(state.animations, { move });
+// return extend(state, { animations });
+// };
+
+// debug
+// ----------
 const printLinePath: PrintLinePath = (distance, angle, states, steps) => {
     let newState = states[states.length - 1];
     const playerState = newState.player;
     const startPosition = playerState.position;
-
     // for (let count = 0; count < steps/2; count++) {
     for (let count = 0; count <= steps; count++) {
         let newPlayerState = lineMove({
@@ -84,7 +106,6 @@ const printLinePath: PrintLinePath = (distance, angle, states, steps) => {
     return newState;
 };
 
-const roundDecimals = (n, p) => Math.round(n * p) / p;
 const trailDebug: TrailDebug = (
     states,
     steps,
@@ -116,9 +137,9 @@ const trailDebug: TrailDebug = (
 };
 module.exports = {
     drawPlayer: draw,
-    lineMove,
+    // updateMovement,
+
+    // debug, safe to delete
     printLinePath,
-    trailDebug,
-    DIRECTION_CW,
-    DIRECTION_CCW
+    trailDebug
 };

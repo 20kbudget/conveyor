@@ -51,9 +51,9 @@ const tracks = [
 ];
 const track = tracks[tracks.length - 1];
 const halfTile = tileSize / 2;
-const trackOffset = [0, 0, 0];
+// const trackOffset = [0, 0, 0];
+const trackOffset = [tileSize * 0.8, 0, 0];
 // const playerOffset = trackOffset
-// const trackOffset = [tileSize * 0.8, 0, 0];
 const playerOffset = subtract([], trackOffset, [halfTile, 0, 0]);
 const tiles = parseTrack({
     track,
@@ -61,12 +61,14 @@ const tiles = parseTrack({
     offset: trackOffset,
     reverse: false
 });
-// const tiles = parseTrack({ track, angle: 180, offset: trackOffset, reverse: true });
 
 let state = {
     player: {
         position: playerOffset,
-        angleZ: 0
+        angleZ: 0,
+        animations: {
+            move: null
+        }
     }
 };
 
@@ -87,32 +89,17 @@ const drawPlayerParams = ({ position, angleZ }, index) => {
     };
 };
 
-const radius = tileSize / 2;
 const curveVsLineRatio = 0.6;
 let steps = 60;
-// let steps = 5;
 let curveSteps = Math.round(steps * curveVsLineRatio);
-let states = [state];
-let lineDebugParams = [states, steps, radius];
-let debugParams = [states, curveSteps, radius];
 
 regl.clear({ color: [0, 0, 0, 1] });
 drawTrack({ tiles, view, projection });
-let players = states.map((state, index) =>
-    drawPlayerParams(state.player, index)
-);
-drawPlayer(players);
 
+console.log({ playerOffset });
 getTilePath({
-    center: trackOffset,
-    entry: playerOffset,
-    // center: add([], trackOffset, [tileSize, 0, 0]),
-    // entry: add([], playerOffset, [tileSize, 0, 0]),
-    // center: add([], trackOffset, [tileSize, tileSize, 0]),
-    // entry: add([], trackOffset, [tileSize, halfTile, 0]),
-    // center: add([], trackOffset, [2 * tileSize, tileSize, 0]),
-    // entry: add([], trackOffset, [tileSize + halfTile, tileSize, 0]),
-    // center: trackOffset,
-    // entry: playerOffset,
+    position: playerOffset,
+    tileDimensions: [tileSize, tileSize, 0],
+    trackOffset,
     track: tiles
 });

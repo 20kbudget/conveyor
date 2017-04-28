@@ -1,10 +1,6 @@
 // @flow
 import type { Vec3 } from './basicTypes';
-
-type PlayerState = {
-    position: Vec3,
-    angleZ: number
-};
+import type { PlayerState } from './player';
 
 type LineMove = ({
     state: PlayerState,
