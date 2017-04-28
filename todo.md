@@ -12,7 +12,7 @@
 
 - [ ] player
     - [ ] move
-        - [ ] update opsition based on current tile / position instead of precalculating all states
+        - * [ ] update opsition based on current tile / position instead of precalculating all states
         - [x] update player position on enterFrame
         - [x] lineMove state reducer
         - [x] curveMove state reducer
@@ -23,10 +23,10 @@
         - [ ] global state
         - [ ] animation
 - [ ] tracks
-    - * [ ] store information about all track tiles (rotation, curves, inputs)
+    - [x] store information about all track tiles (rotation, curves, inputs)
     - [ ] test / implement branch of a branch (nested parenthesis)
 - [ ] refactor
-    - [ ] replace my vectors/ramda stuff with https://github.com/stackgl/gl-vec3
+    - [x] replace my vectors/ramda stuff with https://github.com/stackgl/gl-vec3
 - [ ] world
     - [ ] regular tick times?
 - [ ] tools / debug
