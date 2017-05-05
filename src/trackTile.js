@@ -1,4 +1,11 @@
 // @flow
+import type { Vec3 } from './basicTypes';
+export type TrackTile = {
+    name: string,
+    offset: Vec3,
+    angle: number,
+    speed: number
+};
 
 const regl = require('regl')();
 const extend = require('xtend');

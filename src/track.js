@@ -1,12 +1,8 @@
 // @flow
 import type { Vec3, Mat4, ProjectionFn } from './basicTypes';
-
-export type TrackTile = {
-    name: string,
-    offset: Vec3,
-    angle: number,
-    speed: number
-};
+import type { PlayerState } from './player';
+import type { TrackTile } from './trackTile';
+import type { AnimationStep } from './animations';
 
 const identity = require('gl-mat4/identity');
 const scale = require('gl-mat4/scale');
@@ -47,17 +43,21 @@ const drawTrack: DrawTrack = ({ tiles, view, projection }) =>
 const closestTileCenter = ({ position, tileDimensions, trackOffset }) => {
     const [px, py, ...pz] = subtract([], position, trackOffset);
     const [tw, th, ...tl] = tileDimensions;
-    const x = Math.round(px / tw) * tw;
+    const x = Math.ceil(px / tw) * tw;
     const y = Math.round(py / th) * th;
     return add([], [x, y, 0], trackOffset);
 };
 
 const closestEntry = ({ position, tiles, tileDimensions }) => {
     const [tw, th, ...tl] = tileDimensions;
+    // console.log({tileDimensions})
+    console.log({tiles})
+    console.log({position})
     const closestDistance = tiles.reduce(
         (acc, tile) => {
             const tileInputs = tileAnimations[tile.name];
             let result = acc;
+            console.log({tileInputs})
             tileInputs.forEach(t => {
                 const angle = rad(t.entry);
                 const x = tile.offset[0] + Math.cos(angle) * tw;
@@ -65,31 +65,36 @@ const closestEntry = ({ position, tiles, tileDimensions }) => {
                 const entryVertex = [x, y, 0];
                 const d = distance(entryVertex, position);
                 if (d < result.distance) {
-                    result = { vertex: entryVertex, distance: d };
+                    result = { angle: t.entry, distance: d };
                 }
             });
+            console.log({result})
             return result;
         },
-        { distance: Number.MAX_VALUE, vertex: [] }
+        { distance: Number.MAX_VALUE, angle: 0 }
     );
-    return closestDistance.vertex;
+    console.log({closestDistance})
+    return closestDistance.angle;
 };
 
 type GetTilePath = ({
-    position: Vec3,
+    state: PlayerState,
     track: TrackTile[],
-    tileDimensions?: Vec3,
-    trackOffset?: Vec3
-}) => Function;
+    trackOffset?: Vec3,
+    tileDimensions?: Vec3
+}) => AnimationStep;
 const getTilePath: GetTilePath = ({
-    position,
-    tileDimensions = [tileSize, tileSize, 0],
+    state,
     track,
-    trackOffset = [0, 0, 0]
+    trackOffset = [0, 0, 0],
+    tileDimensions = [tileSize, tileSize, 0]
 }) => {
-    console.log('getTilePath', trackOffset, position)
+    const position = state.position;
     const center = closestTileCenter({ position, tileDimensions, trackOffset });
+    console.log({position})
     console.log({center})
+    console.log({track})
+
     const sameCenterTiles = track.filter(tile => {
         const hasSameCenter = tile.offset.toString() === center.toString();
         return hasSameCenter;
@@ -101,24 +106,33 @@ const getTilePath: GetTilePath = ({
         tileDimensions
     });
     console.log({entry})
-    const entryAngleRad = getAngle(subtract([], entry, center), [1, 0, 0]);
-    const entryAngle = degrees(entryAngleRad) * (entry[1] < center[1] ? -1 : 1);
-    let animation = state => state;
+    // const entryAngleRad = getAngle(subtract([], entry, center), [1, 0, 0]);
+    // const entryAngle = Math.round(degrees(entryAngleRad) * (entry[1] < center[1] ? -1 : 1));
+    const entryAngle = entry;
+    console.log({entryAngle})
+    let animation = ({ playerState, tile }) => ({ state, progress }) => {
+        console.log('noop animation')
+        return state;
+    }
     const matchingTile = sameCenterTiles.find(tile => {
-        const sameEntryAnimation = tileAnimations[tile.name].find(
-            a => a.entry === entryAngle - tile.angle
+        console.log({tile})
+        console.log(tileAnimations[tile.name])
+        const sameEntryPath = tileAnimations[tile.name].find(
+            // a => a.entry === entryAngle - tile.angle
+            a => a.entry === entryAngle
         );
-        if (sameEntryAnimation === undefined) {
+        console.log({sameEntryPath})
+        if (sameEntryPath === undefined) {
             return false;
         }
-        animation = sameEntryAnimation.animation;
+        animation = sameEntryPath.animation;
         return true;
     });
     console.log({matchingTile})
-    // if (matchingTile === undefined){
-        // return state => state;
-    // }
-    return animation;
+    return animation({
+        playerState: state,
+        tile: matchingTile
+    });
 };
 
 module.exports = {

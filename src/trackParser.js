@@ -1,6 +1,6 @@
 // @flow
 import type { Vec3 } from './basicTypes';
-import type { TrackTile } from './track';
+import type { TrackTile } from './trackTile';
 
 const balanced = require('balanced-match');
 const add = require('gl-vec3/add');

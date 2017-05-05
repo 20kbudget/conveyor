@@ -1,12 +1,14 @@
 // @flow
 import type { Vec3, Vec4, Mat4, ProjectionFn } from './basicTypes';
-import type { TrackTile } from './track';
+import type { TrackTile } from './trackTile';
+
+import type { AnimationStep } from './animations';
 export type PlayerState = {
     position: Vec3,
     angleZ: number,
     animations: {
         move: {
-            update: Function,
+            update: AnimationStep,
             startTime: number,
             duration: number,
             progress: number
@@ -19,7 +21,6 @@ const extend = require('xtend');
 const identity = require('gl-mat4/identity');
 const rotateZ = require('gl-mat4/rotateZ');
 const translate = require('gl-mat4/translate');
-const { lineMove, curveMove } = require('./animations');
 const { getTilePath } = require('./track');
 
 const rad = degree => degree * Math.PI / 180;
@@ -92,7 +93,7 @@ const createPlayerState: CreatePlayerState = ({ position }) => ({
             progress: 1,
             duration: 1,
             startTime: 0,
-            update: state => state
+            update: ({state, progress}) => state
         }
     }
 });
@@ -101,16 +102,18 @@ const createPlayerState: CreatePlayerState = ({ position }) => ({
 type UpdateMovement = ({
     state: PlayerState,
     trackOffset: Vec3,
+    startTime: number,
     track: TrackTile[]
 }) => PlayerState;
-const updateMovement: UpdateMovement = ({ state, track, trackOffset }) => {
+const updateMovement: UpdateMovement = ({ state, track, trackOffset, startTime }) => {
+    console.log('updateMovement', state.animations.move.progress)
     const update = getTilePath({
-        position: state.position,
+        state,
         track,
         trackOffset
     });
     console.log({ update });
-    const move = extend(state.animations.move, {update});
+    const move = extend(state.animations.move, {update, startTime});
     const animations = extend(state.animations, { move });
     return extend(state, { animations });
 };

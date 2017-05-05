@@ -1,34 +1,16 @@
 // @flow
 import type { Vec3 } from './basicTypes';
 import type { PlayerState } from './player';
+import type { TrackTile } from './trackTile';
 
-type LineMove = ({
+export type AnimationStep = ({
     state: PlayerState,
-    startPosition: Vec3,
-    progress: number,
-    distance: number,
-    angle: number
-}) => PlayerState;
-
-type CurveParams = {
-    state: PlayerState,
-    center: Vec3,
-    radius: number,
-    rotation: number,
-    playerStartAngle: number,
     progress: number
-};
-
-type CurveMove = (
-    CurveParams & {
-        curveAngle?: number,
-        direction?: number
-    }
-) => PlayerState;
-
-type CurveRight = CurveParams => PlayerState;
-
-type CurveLeft = CurveParams => PlayerState;
+}) => PlayerState;
+type TileAnimation = ({
+    playerState: PlayerState,
+    tile: TrackTile
+}) => AnimationStep;
 
 const add = require('gl-vec3/add');
 const extend = require('xtend');
@@ -39,38 +21,46 @@ const tileSize = 8 * 8 / 10;
 
 const rad = degree => degree * Math.PI / 180;
 
-const lineMove: LineMove = ({
+const lineMove: TileAnimation = ({ playerState, tile }) => ({
     state,
-    progress,
-    startPosition,
-    distance = tileSize,
-    angle = 0
+    progress
 }) => {
-    console.log('line move')
-    console.log({startPosition})
-    console.log({progress})
-    console.log({state})
+    const startPosition = playerState.position;
+    const distance = tileSize;
+    const angle = playerState.angleZ;
     const totalLength = progress * distance;
     const x = Math.cos(rad(angle)) * totalLength;
     const y = Math.sin(rad(angle)) * totalLength;
     const offset = [x, y, 0];
     const position = add([], startPosition, offset);
-    const nextState = extend(state, { position });
+    const nextState = extend(state, { position, angleZ: angle });
     return nextState;
 };
 
-const curveMove: CurveMove = ({
+
+const curveMove: TileAnimation = ({ playerState, tile }) => ({
     state,
-    center,
-    radius,
-    rotation,
-    playerStartAngle,
-    progress,
-    curveAngle = 90,
-    direction = DIRECTION_CCW
+    progress
 }) => {
+    const radius = tileSize / 2;
+    const curveAngle = 90;
+
+    // console.log('curve move', tile.angle, progress)
+    const rightCurveCenterOffset = [
+        (Math.cos(rad(270 + tile.angle)) * tileSize /2),
+        (Math.sin(rad(270 + tile.angle)) * tileSize / 2) - tileSize / 2,
+        0
+    ]
+    const center = add([], tile.offset, rightCurveCenterOffset);
+    const rotation = tile.angle;
+    const playerStartAngle = playerState.angleZ;
+    // const direction = DIRECTION_CCW;
+    const direction = DIRECTION_CW;
     const curveProgress = progress * curveAngle * direction;
-    const angle = rotation + curveProgress;
+    // const angle = rotation + curveProgress;
+    // const angle = curveProgress;
+    const angle = curveProgress - rotation;
+    console.log('curve move', angle)
     const playerAngle = playerStartAngle + curveProgress;
     const x = center[0] + radius * Math.cos(rad(angle));
     const y = center[1] + radius * Math.sin(rad(angle));
@@ -82,27 +72,12 @@ const curveMove: CurveMove = ({
     return newPlayerState;
 };
 
-// prettier-ignore
-const curveRight:CurveRight = ({
-    state, center, radius, rotation, playerStartAngle, progress
-}) => curveMove({
-    state, center, radius, rotation, playerStartAngle, progress,
-    direction: DIRECTION_CW
-});
-
-// prettier-ignore
-const curveLeft:CurveLeft = ({
-    state, center, radius, curveAngle, rotation, playerStartAngle, progress
-}) => curveMove({
-    state, center, radius, rotation, playerStartAngle, progress,
-    curveAngle: 90, direction: DIRECTION_CCW,
-});
-
 const moves = {
     forward: { entry: 180, animation: lineMove },
-    left: { entry: 90, animation: curveLeft },
-    right: { entry: 270, animation: curveRight }
+    left: { entry: 90, animation: curveMove },
+    right: { entry: 270, animation: curveMove }
 };
+
 const tileAnimations = {
     forward: [moves.forward],
     left: [moves.left],
