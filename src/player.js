@@ -101,11 +101,16 @@ const createPlayerState: CreatePlayerState = ({ position }) => ({
 // reducers
 type UpdateMovement = ({
     state: PlayerState,
-    initialState:PlayerState,
+    initialState: PlayerState,
     trackOffset: Vec3,
     track: TrackTile[]
 }) => AnimationStep;
-const updateMovement: UpdateMovement = ({ state, initialState, track, trackOffset }) => {
+const updateMovement: UpdateMovement = ({
+    state,
+    initialState,
+    track,
+    trackOffset
+}) => {
     // console.log('updateMovement', state.animations.move.progress);
     const update = getTilePath({
         state,
