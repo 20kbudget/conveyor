@@ -93,7 +93,7 @@ const createPlayerState: CreatePlayerState = ({ position }) => ({
             progress: 1,
             duration: 1,
             startTime: 0,
-            update: ({state, progress}) => state
+            update: ({ state, progress }) => state
         }
     }
 });
@@ -101,21 +101,20 @@ const createPlayerState: CreatePlayerState = ({ position }) => ({
 // reducers
 type UpdateMovement = ({
     state: PlayerState,
+    initialState:PlayerState,
     trackOffset: Vec3,
-    startTime: number,
     track: TrackTile[]
-}) => PlayerState;
-const updateMovement: UpdateMovement = ({ state, track, trackOffset, startTime }) => {
-    console.log('updateMovement', state.animations.move.progress)
+}) => AnimationStep;
+const updateMovement: UpdateMovement = ({ state, initialState, track, trackOffset }) => {
+    // console.log('updateMovement', state.animations.move.progress);
     const update = getTilePath({
         state,
+        initialState,
         track,
         trackOffset
     });
-    console.log({ update });
-    const move = extend(state.animations.move, {update, startTime});
-    const animations = extend(state.animations, { move });
-    return extend(state, { animations });
+    // console.log({ update });
+    return update;
 };
 
 module.exports = {

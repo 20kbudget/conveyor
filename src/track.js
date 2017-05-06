@@ -43,94 +43,73 @@ const drawTrack: DrawTrack = ({ tiles, view, projection }) =>
 const closestTileCenter = ({ position, tileDimensions, trackOffset }) => {
     const [px, py, ...pz] = subtract([], position, trackOffset);
     const [tw, th, ...tl] = tileDimensions;
-    const x = Math.ceil(px / tw) * tw;
+    const x = Math.round(px / tw) * tw;
     const y = Math.round(py / th) * th;
     return add([], [x, y, 0], trackOffset);
 };
 
 const closestEntry = ({ position, tiles, tileDimensions }) => {
     const [tw, th, ...tl] = tileDimensions;
-    // console.log({tileDimensions})
-    console.log({tiles})
-    console.log({position})
     const closestDistance = tiles.reduce(
-        (acc, tile) => {
+        (acc, tile, index) => {
             const tileInputs = tileAnimations[tile.name];
             let result = acc;
-            console.log({tileInputs})
             tileInputs.forEach(t => {
-                const angle = rad(t.entry);
-                const x = tile.offset[0] + Math.cos(angle) * tw;
-                const y = tile.offset[1] + Math.sin(angle) * th;
+                const angle = rad(t.entry + tile.angle);
+                const x = tile.offset[0] + Math.cos(angle) * tw / 2;
+                const y = tile.offset[1] + Math.sin(angle) * th / 2;
                 const entryVertex = [x, y, 0];
                 const d = distance(entryVertex, position);
                 if (d < result.distance) {
-                    result = { angle: t.entry, distance: d };
+                    result = { angle: t.entry, distance: d, tile };
                 }
             });
-            console.log({result})
             return result;
         },
-        { distance: Number.MAX_VALUE, angle: 0 }
+        { distance: Number.MAX_VALUE, angle: 0, tile: null }
     );
-    console.log({closestDistance})
-    return closestDistance.angle;
+    return closestDistance.tile ? closestDistance : null;
 };
 
 type GetTilePath = ({
     state: PlayerState,
+    initialState: PlayerState,
     track: TrackTile[],
     trackOffset?: Vec3,
     tileDimensions?: Vec3
 }) => AnimationStep;
 const getTilePath: GetTilePath = ({
     state,
+    initialState,
     track,
     trackOffset = [0, 0, 0],
     tileDimensions = [tileSize, tileSize, 0]
 }) => {
+    let animation = ({ playerState, tile }) => ({ state, progress }) => {
+        console.log('noop animation');
+        return state;
+    };
+    let matchingTile = null;
     const position = state.position;
     const center = closestTileCenter({ position, tileDimensions, trackOffset });
-    console.log({position})
-    console.log({center})
-    console.log({track})
-
     const sameCenterTiles = track.filter(tile => {
         const hasSameCenter = tile.offset.toString() === center.toString();
         return hasSameCenter;
     });
-    console.log({sameCenterTiles})
     const entry = closestEntry({
         position,
         tiles: sameCenterTiles,
         tileDimensions
     });
-    console.log({entry})
-    // const entryAngleRad = getAngle(subtract([], entry, center), [1, 0, 0]);
-    // const entryAngle = Math.round(degrees(entryAngleRad) * (entry[1] < center[1] ? -1 : 1));
-    const entryAngle = entry;
-    console.log({entryAngle})
-    let animation = ({ playerState, tile }) => ({ state, progress }) => {
-        console.log('noop animation')
-        return state;
-    }
-    const matchingTile = sameCenterTiles.find(tile => {
-        console.log({tile})
-        console.log(tileAnimations[tile.name])
-        const sameEntryPath = tileAnimations[tile.name].find(
-            // a => a.entry === entryAngle - tile.angle
-            a => a.entry === entryAngle
+    if (entry) {
+        matchingTile = entry.tile;
+        const sameEntryPath = tileAnimations[matchingTile.name].find(
+            a => a.entry === entry.angle
         );
-        console.log({sameEntryPath})
-        if (sameEntryPath === undefined) {
-            return false;
-        }
         animation = sameEntryPath.animation;
-        return true;
-    });
-    console.log({matchingTile})
+    }
     return animation({
-        playerState: state,
+        playerState: initialState,
         tile: matchingTile
     });
 };

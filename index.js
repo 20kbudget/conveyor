@@ -17,7 +17,7 @@ const {
 } = require('./src/player');
 
 // const cameraDistance = 50;
-const cameraDistance = 40;
+const cameraDistance = 50;
 
 const tileSize = 8 * 8 / 10;
 const view = lookAt([], [0, 0, cameraDistance], [0, 0, 0], [0, 1.0, 0]);
@@ -33,6 +33,9 @@ const tracks = [
     'r(f,f)f,r,f,f,r,f,r(f,f)f,r,f,f,r,f', // simple map 1
     'lf,r,r(f,f)f,r,f,f,r,f,b(l,f,f,begin)r,f', // simple map easy
     'lf,r,f',
+    'lf,r,r,l',
+    'lf,l,r,f,r,l,f',
+    'f,r,l,l,l,r,l,f'
     // 'lf,l',
     // 'l,r,r,b(f)r,l,f,r,r(f)f,f,r,f,r,r(f)l(l,f)f,f', // nice map 1
     // 'l,r,r,b(f,l,r,l,f,f,r,l,l,l,r,r,r,l,l,l,r,f,l,r,l,r,l,f,f,f,r,l,f)r,l,f,r,r(f)f,f,r,f,r,r(f)l(l,f)f,f',
@@ -73,32 +76,34 @@ let tick = regl.frame(context => {
     const startTime = firstFrame ? time : moveAnim.startTime;
     const moveDeltaTime = time - moveAnim.startTime;
     let moveProgress = firstFrame ? 1 : moveDeltaTime / moveAnim.duration;
-    const isMoveFinished = moveAnim.progress >= 1 || moveProgress >= 1;
-    // console.log({moveProgress})
-    if (isMoveFinished) {
-        console.log({moveProgress})
-        nextPlayer = updateMovement({
-            state: moveAnim.update({
-                state: nextPlayer,
-                progress: moveProgress
-            }),
-            track: tiles,
-            trackOffset,
-            startTime: time
-        });
-        moveProgress -= 1;
-    }
-    nextPlayer.animations.move.progress = moveProgress;
     nextPlayer = nextPlayer.animations.move.update({
         state: nextPlayer,
-        progress: moveProgress
+        progress: Math.min(moveProgress, 1)
     });
-    // console.log({nextPlayer})
+    // console.log(nextPlayer.angleZ, moveProgress, Math.min(moveProgress, 1))
     drawPlayer(drawPlayerParams(nextPlayer, { view, projection }));
+    const isMoveFinished = moveAnim.progress >= 1 || moveProgress >= 1;
+    if (isMoveFinished) {
+        const afterTileState = moveAnim.update({
+            state: nextPlayer,
+            progress: 1.1
+        });
+        const nextUpdate = updateMovement({
+            state: afterTileState,
+            initialState: nextPlayer,
+            track: tiles,
+            trackOffset
+        });
+        nextPlayer.animations.move.update = nextUpdate;
+        nextPlayer.animations.move.startTime = time;
+        nextPlayer.animations.move.progress = moveProgress - 1;
+        // console.log({nextPlayer})
+    }
     state = extend(state, { player: nextPlayer });
 });
 
 // stop after x seconds (dev-mode)
 window.setTimeout(() => {
+    console.log('end');
     tick.cancel();
-}, 3500);
+}, 8500);
