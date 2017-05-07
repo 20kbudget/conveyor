@@ -9,10 +9,12 @@
 ### Task list
 
 - [ ] player
+    - [ ] movement
+        - [ ] * player upside-down
     - [ ] death
         - [ ] check if there is a conveyor on the same base z position
     - [ ] jump
-        - [ ] * tap listener
+        - [ ] tap listener
         - [ ] animation
         - [ ] allow jumping only on certain angles and landing tile
     - [x] move
