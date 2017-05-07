@@ -35,11 +35,12 @@ type ParseTrack = ({
     branchTileName?: string
 }) => TrackTile[];
 
+const roundDecimals = n => Math.round(n * 100) / 100;
 const offsetAfterTile = angle => {
     let x = tileSize * trackScale[0] * Math.round(Math.cos(rad(angle)));
     let y = tileSize * trackScale[1] * Math.round(Math.sin(rad(angle)));
     let z = 0;
-    return [x, y, z];
+    return [roundDecimals(x), roundDecimals(y), z];
 };
 
 const parseTrack: ParseTrack = ({
@@ -71,7 +72,7 @@ const parseTrack: ParseTrack = ({
             if (reverse || isBranchTile) {
                 angleOffset *= -1;
             }
-            nextAngle = angle + angleOffset;
+            nextAngle = (angle + angleOffset) % 360;
             nextOffset = reverse || isBranchTile
                 ? subtract([], offset, offsetAfterTile(nextAngle))
                 : add([], offset, offsetAfterTile(nextAngle));

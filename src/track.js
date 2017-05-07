@@ -77,7 +77,7 @@ type GetTilePath = ({
     track: TrackTile[],
     trackOffset?: Vec3,
     tileDimensions?: Vec3
-}) => AnimationStep;
+}) => { update: AnimationStep, duration: number };
 const getTilePath: GetTilePath = ({
     state,
     initialState,
@@ -90,12 +90,15 @@ const getTilePath: GetTilePath = ({
         return state;
     };
     let matchingTile = null;
+    let duration = 1;
     const position = state.position;
     const center = closestTileCenter({ position, tileDimensions, trackOffset });
     const sameCenterTiles = track.filter(tile => {
-        const hasSameCenter = tile.offset.toString() === center.toString();
+        // fucking javascript 12.8 + 6.4 = 19.200000000000003
+        const hasSameCenter = distance(tile.offset, center) < 0.01;
         return hasSameCenter;
     });
+    // console.log({sameCenterTiles})
     const entry = closestEntry({
         position,
         tiles: sameCenterTiles,
@@ -106,12 +109,16 @@ const getTilePath: GetTilePath = ({
         const sameEntryPath = tileAnimations[matchingTile.name].find(
             a => a.entry === entry.angle
         );
+        duration = sameEntryPath.duration;
         animation = sameEntryPath.animation;
     }
-    return animation({
-        playerState: initialState,
-        tile: matchingTile
-    });
+    return {
+        update: animation({
+            playerState: initialState,
+            tile: matchingTile
+        }),
+        duration
+    };
 };
 
 module.exports = {

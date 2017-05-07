@@ -17,7 +17,7 @@ const {
 } = require('./src/player');
 
 // const cameraDistance = 50;
-const cameraDistance = 50;
+const cameraDistance = 60;
 
 const tileSize = 8 * 8 / 10;
 const view = lookAt([], [0, 0, cameraDistance], [0, 0, 0], [0, 1.0, 0]);
@@ -30,14 +30,12 @@ const tracks = [
     'l,r,r,r,l,r,r,r', // INVALID only curves, small 8
     'l,r,r,r,l,l,r,r,r,l,l,r,r,r,l,l,r,r,r,l', // INVALID X
     'l,r,f,r,r,f,l,l,f,r,r,f,r,l,l,r,r,r,l,l,r,r,r,l', // scissor
-    'r(f,f)f,r,f,f,r,f,r(f,f)f,r,f,f,r,f', // simple map 1
+    // 'r(f,f)f,r,f,f,r,f,r(f,f)f,r,f,f,r,f', // [BUG] simple map 1
     'lf,r,r(f,f)f,r,f,f,r,f,b(l,f,f,begin)r,f', // simple map easy
-    'lf,r,f',
-    'lf,r,r,l',
-    'lf,l,r,f,r,l,f',
-    'f,r,l,l,l,r,l,f'
-    // 'lf,l',
-    // 'l,r,r,b(f)r,l,f,r,r(f)f,f,r,f,r,r(f)l(l,f)f,f', // nice map 1
+    'rlf,l,l,f,l,b(l)l',
+    // 'f,r,l,l,l,r,l,f,l,l',
+    'l,r,r,b(f)r,l,f,r,r(f)f,f,r,f,r,r(f)l(l,f)f,f' // nice map 1
+    // 'l,l,f,f,l,l,f,f',
     // 'l,r,r,b(f,l,r,l,f,f,r,l,l,l,r,r,r,l,l,l,r,f,l,r,l,r,l,f,f,f,r,l,f)r,l,f,r,r(f)f,f,r,f,r,r(f)l(l,f)f,f',
     // 'f,f,f,l,f,l,r(r,f,f,f)l(l,f,f,r,f,r,f,f,f)f,f,f,f,bl,f,r(f,f,f)f,r,f,f,f,r,l(r,r,l,r,f,f,f)f,r(f,f,f)f,b(l,f,f,f)r,f,f,f',
     // 'f,f(r)l', // @BUG @TBD
@@ -60,6 +58,7 @@ const tiles = parseTrack({
 let state = {
     player: createPlayerState({ position: playerOffset })
 };
+// state.player.angleZ = 180;
 
 const curveVsLineRatio = 0.6;
 let steps = 60;
@@ -84,26 +83,28 @@ let tick = regl.frame(context => {
     drawPlayer(drawPlayerParams(nextPlayer, { view, projection }));
     const isMoveFinished = moveAnim.progress >= 1 || moveProgress >= 1;
     if (isMoveFinished) {
+        // console.log({moveProgress})
         const afterTileState = moveAnim.update({
             state: nextPlayer,
             progress: 1.1
         });
-        const nextUpdate = updateMovement({
+        const updateAndDuration = updateMovement({
             state: afterTileState,
             initialState: nextPlayer,
             track: tiles,
             trackOffset
         });
-        nextPlayer.animations.move.update = nextUpdate;
+        nextPlayer.animations.move.update = updateAndDuration.update;
+        nextPlayer.animations.move.duration = updateAndDuration.duration;
         nextPlayer.animations.move.startTime = time;
-        nextPlayer.animations.move.progress = moveProgress - 1;
+        nextPlayer.animations.move.progress = 0;
         // console.log({nextPlayer})
     }
     state = extend(state, { player: nextPlayer });
 });
 
 // stop after x seconds (dev-mode)
-window.setTimeout(() => {
-    console.log('end');
-    tick.cancel();
-}, 8500);
+// window.setTimeout(() => {
+// console.log('end');
+// tick.cancel();
+// }, 10500);

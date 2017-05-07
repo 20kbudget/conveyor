@@ -21,6 +21,8 @@ const extend = require('xtend');
 
 const DIRECTION_CW = -1;
 const DIRECTION_CCW = 1;
+const LINE_DURATION = 1.0;
+const CURVE_DURATION = LINE_DURATION * 0.6;
 const tileSize = 8 * 8 / 10;
 
 const rad = degree => degree * Math.PI / 180;
@@ -79,9 +81,13 @@ const curveMove: CurveMove = curveName => ({ playerState, tile }) => ({
 };
 
 const moves = {
-    forward: { entry: 180, animation: lineMove },
-    left: { entry: 90, animation: curveMove('left') },
-    right: { entry: 270, animation: curveMove('right') }
+    forward: { entry: 180, animation: lineMove, duration: LINE_DURATION },
+    left: { entry: 90, animation: curveMove('left'), duration: CURVE_DURATION },
+    right: {
+        entry: 270,
+        animation: curveMove('right'),
+        duration: CURVE_DURATION
+    }
 };
 
 const tileAnimations = {

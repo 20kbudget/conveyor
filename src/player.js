@@ -104,22 +104,20 @@ type UpdateMovement = ({
     initialState: PlayerState,
     trackOffset: Vec3,
     track: TrackTile[]
-}) => AnimationStep;
+}) => { update: AnimationStep, duration: number };
 const updateMovement: UpdateMovement = ({
     state,
     initialState,
     track,
     trackOffset
 }) => {
-    // console.log('updateMovement', state.animations.move.progress);
-    const update = getTilePath({
+    const result = getTilePath({
         state,
         initialState,
         track,
         trackOffset
     });
-    // console.log({ update });
-    return update;
+    return result;
 };
 
 module.exports = {
