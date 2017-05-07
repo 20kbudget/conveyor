@@ -19,6 +19,9 @@
         - [ ] allow jumping only on certain angles and landing tile
     - [x] move
 - [ ] tracks
+    - [ ] separated tracks
+        - [ ] syntax
+        - [ ] implementation
     - [ ] test / implement branch of a branch (nested parenthesis)
 - [ ] world
     - [ ] regular tick times?

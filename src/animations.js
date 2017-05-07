@@ -33,13 +33,13 @@ const lineMove: TileAnimation = ({ playerState, tile }) => ({
 }) => {
     const startPosition = playerState.position;
     const distance = tileSize;
-    const angle = playerState.angleZ;
+    const trackAngle = tile.angle;
     const totalLength = progress * distance;
-    const x = Math.cos(rad(angle)) * totalLength;
-    const y = Math.sin(rad(angle)) * totalLength;
+    const x = Math.cos(rad(trackAngle)) * totalLength;
+    const y = Math.sin(rad(trackAngle)) * totalLength;
     const offset = [x, y, 0];
     const position = add([], startPosition, offset);
-    const nextState = extend(state, { position, angleZ: angle });
+    const nextState = extend(state, { position });
     return nextState;
 };
 

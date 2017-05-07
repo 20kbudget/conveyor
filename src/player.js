@@ -100,18 +100,21 @@ const createPlayerState: CreatePlayerState = ({ position }) => ({
 
 // reducers
 type UpdateMovement = ({
+    tick: { cancel: Function },
     state: PlayerState,
     initialState: PlayerState,
     trackOffset: Vec3,
     track: TrackTile[]
 }) => { update: AnimationStep, duration: number };
 const updateMovement: UpdateMovement = ({
+    tick,
     state,
     initialState,
     track,
     trackOffset
 }) => {
     const result = getTilePath({
+        tick,
         state,
         initialState,
         track,

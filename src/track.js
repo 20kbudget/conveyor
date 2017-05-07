@@ -72,6 +72,7 @@ const closestEntry = ({ position, tiles, tileDimensions }) => {
 };
 
 type GetTilePath = ({
+    tick: { cancel: Function },
     state: PlayerState,
     initialState: PlayerState,
     track: TrackTile[],
@@ -79,6 +80,7 @@ type GetTilePath = ({
     tileDimensions?: Vec3
 }) => { update: AnimationStep, duration: number };
 const getTilePath: GetTilePath = ({
+    tick,
     state,
     initialState,
     track,
@@ -87,6 +89,7 @@ const getTilePath: GetTilePath = ({
 }) => {
     let animation = ({ playerState, tile }) => ({ state, progress }) => {
         console.log('noop animation');
+        tick.cancel();
         return state;
     };
     let matchingTile = null;
