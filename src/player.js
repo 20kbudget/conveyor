@@ -1,23 +1,9 @@
 // @flow
 import type { Vec3, Vec4, Mat4, ProjectionFn } from './basicTypes';
 import type { TrackTile } from './trackTile';
-
 import type { AnimationStep } from './animations';
-export type PlayerState = {
-    position: Vec3,
-    angleZ: number,
-    animations: {
-        move: {
-            update: AnimationStep,
-            startTime: number,
-            duration: number,
-            progress: number
-        }
-    }
-};
 
 const regl = require('regl')();
-const extend = require('xtend');
 const identity = require('gl-mat4/identity');
 const rotateZ = require('gl-mat4/rotateZ');
 const translate = require('gl-mat4/translate');
@@ -84,6 +70,18 @@ const draw: PlayerDraw = regl({
 });
 
 // player state
+export type PlayerState = {
+    position: Vec3,
+    angleZ: number,
+    animations: {
+        move: {
+            update: AnimationStep,
+            startTime: number,
+            duration: number,
+            progress: number
+        }
+    }
+};
 type CreatePlayerState = ({ position: Vec3 }) => PlayerState;
 const createPlayerState: CreatePlayerState = ({ position }) => ({
     position,
@@ -100,27 +98,48 @@ const createPlayerState: CreatePlayerState = ({ position }) => ({
 
 // reducers
 type UpdateMovement = ({
-    tick: { cancel: Function },
     state: PlayerState,
-    initialState: PlayerState,
+    time: number,
+    tiles: TrackTile[],
     trackOffset: Vec3,
-    track: TrackTile[]
-}) => { update: AnimationStep, duration: number };
+    tick: { cancel: Function }
+}) => PlayerState;
 const updateMovement: UpdateMovement = ({
-    tick,
     state,
-    initialState,
-    track,
-    trackOffset
+    time,
+    tiles,
+    trackOffset,
+    tick
 }) => {
-    const result = getTilePath({
-        tick,
-        state,
-        initialState,
-        track,
-        trackOffset
+    let nextState = state;
+    let moveAnim = nextState.animations.move;
+    const firstFrame = moveAnim.startTime === 0;
+    const startTime = firstFrame ? time : moveAnim.startTime;
+    const moveDeltaTime = time - moveAnim.startTime;
+    let moveProgress = firstFrame ? 1 : moveDeltaTime / moveAnim.duration;
+    nextState = nextState.animations.move.update({
+        state: nextState,
+        progress: Math.min(moveProgress, 1)
     });
-    return result;
+    const isMoveFinished = moveAnim.progress >= 1 || moveProgress >= 1;
+    if (isMoveFinished) {
+        const afterTileState = moveAnim.update({
+            state: nextState,
+            progress: 1.1
+        });
+        const updateAndDuration = getTilePath({
+            tick,
+            state: afterTileState,
+            initialState: nextState,
+            track: tiles,
+            trackOffset
+        });
+        nextState.animations.move.update = updateAndDuration.update;
+        nextState.animations.move.duration = updateAndDuration.duration;
+        nextState.animations.move.startTime = time;
+        nextState.animations.move.progress = 0;
+    }
+    return nextState;
 };
 
 module.exports = {

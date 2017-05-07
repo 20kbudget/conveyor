@@ -22,9 +22,8 @@ const projection = ({ viewportWidth, viewportHeight }) =>
     perspective([], Math.PI / 3, viewportWidth / viewportHeight, 0.01, 1000);
 
 const tracks = [
-    'f,f,l,l,f,f,f,l,l,f' // simple loop
-    // 'f,l,l,f',
-    // 'f,r,r(f,f)f,r,f,f,r,f,b(l,f,f,begin)r,f', // both side options
+    'f,f,l,l,f,f,f,l,l,f', // simple loop
+    'f,r,r(f,f)f,r,f,f,r,f,b(l,f,f,begin)r,f' // both side options
     // 'r(f,f)f,r,f,f,r,f,r(f,f)f,r,f,f,r,f', // player must start turned inside
     // 'l,r,f,r,r,f,l,l,f,r,r,f,r,l,l,r,r,r,l,l,r,r,r,l', // scissor
     // 'l,r,r,b(f)r,l,f,r,r(f)f,f,r,f,r,r(f)l(l,f)f,f' // 2 platforms outside, 2 inside
@@ -63,37 +62,14 @@ drawTrack({ tiles, view, projection });
 let tick = regl.frame(context => {
     const { time } = context;
     let nextPlayer = state.player;
-    let moveAnim = nextPlayer.animations.move;
-    const firstFrame = moveAnim.startTime === 0;
-    const startTime = firstFrame ? time : moveAnim.startTime;
-    const moveDeltaTime = time - moveAnim.startTime;
-    let moveProgress = firstFrame ? 1 : moveDeltaTime / moveAnim.duration;
-    nextPlayer = nextPlayer.animations.move.update({
-        state: nextPlayer,
-        progress: Math.min(moveProgress, 1)
+    nextPlayer = updateMovement({
+        state: state.player,
+        time,
+        tiles,
+        tick,
+        trackOffset
     });
-    // console.log(nextPlayer.angleZ, moveProgress, Math.min(moveProgress, 1))
     drawPlayer(drawPlayerParams(nextPlayer, { view, projection }));
-    const isMoveFinished = moveAnim.progress >= 1 || moveProgress >= 1;
-    if (isMoveFinished) {
-        // console.log({moveProgress})
-        const afterTileState = moveAnim.update({
-            state: nextPlayer,
-            progress: 1.1
-        });
-        const updateAndDuration = updateMovement({
-            tick,
-            state: afterTileState,
-            initialState: nextPlayer,
-            track: tiles,
-            trackOffset
-        });
-        nextPlayer.animations.move.update = updateAndDuration.update;
-        nextPlayer.animations.move.duration = updateAndDuration.duration;
-        nextPlayer.animations.move.startTime = time;
-        nextPlayer.animations.move.progress = 0;
-        // console.log({nextPlayer})
-    }
     state = extend(state, { player: nextPlayer });
 });
 
