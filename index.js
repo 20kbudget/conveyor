@@ -7,6 +7,7 @@ const { drawTrack } = require('./src/track');
 const extend = require('xtend');
 const onPointerDown = require('./src/pointerdown');
 const parseTrack = require('./src/trackParser');
+const { jumpMove } = require('./src/animations');
 const {
     drawPlayer,
     createPlayerState,
@@ -24,6 +25,7 @@ const projection = ({ viewportWidth, viewportHeight }) =>
 const tracks = [
     'f,f,l,l,f,f,f,l,l,f', // simple loop
     'f,r,r(f,f)f,r,f,f,r,f,b(l,f,f,begin)r,f' // both side options
+    // 'f,fr,r,f,r,r'
     // 'r(f,f)f,r,f,f,r,f,r(f,f)f,r,f,f,r,f', // player must start turned inside
     // 'l,r,f,r,r,f,l,l,f,r,r,f,r,l,l,r,r,r,l,l,r,r,r,l', // scissor
     // 'l,r,r,b(f)r,l,f,r,r(f)f,f,r,f,r,r(f)l(l,f)f,f' // 2 platforms outside, 2 inside
@@ -59,13 +61,14 @@ let curveSteps = Math.round(steps * curveVsLineRatio);
 regl.clear({ color: [0, 0, 0, 1] });
 drawTrack({ tiles, view, projection });
 
-onPointerDown(window.document.body, event => {
-    console.log(event);
-});
-
+let time = 0;
 let tick = regl.frame(context => {
-    const { time } = context;
+    time = context.time;
     let nextPlayer = state.player;
+    if (!nextPlayer.animations.move.enabled) {
+        nextPlayer.animations.move.enabled = true;
+        nextPlayer.animations.move.startTime = time;
+    }
     nextPlayer = updateMovement({
         state: state.player,
         time,
@@ -74,6 +77,16 @@ let tick = regl.frame(context => {
         trackOffset
     });
     drawPlayer(drawPlayerParams(nextPlayer, { view, projection }));
+    state = extend(state, { player: nextPlayer });
+});
+onPointerDown(window.document.body, event => {
+    let nextPlayer = state.player;
+    nextPlayer.animations.jump.update = jumpMove({
+        initialState: nextPlayer
+    });
+    nextPlayer.animations.jump.enabled = true;
+    nextPlayer.animations.jump.startTime = time;
+    nextPlayer.animations.jump.duration = 0.3;
     state = extend(state, { player: nextPlayer });
 });
 

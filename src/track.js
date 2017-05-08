@@ -14,6 +14,7 @@ const getAngle = require('gl-vec3/angle');
 const add = require('gl-vec3/add');
 const subtract = require('gl-vec3/subtract');
 const distance = require('gl-vec3/distance');
+const extend = require('xtend');
 
 const tileSize = 8 * 8 / 10;
 const trackScale = [4, 4, 1];
@@ -61,12 +62,17 @@ const closestEntry = ({ position, tiles, tileDimensions }) => {
                 const entryVertex = [x, y, 0];
                 const d = distance(entryVertex, position);
                 if (d < result.distance) {
-                    result = { angle: t.entry, distance: d, tile };
+                    result = { angle: t.entry, distance: d, tile, entryVertex };
                 }
             });
             return result;
         },
-        { distance: Number.MAX_VALUE, angle: 0, tile: null }
+        {
+            distance: Number.MAX_VALUE,
+            angle: 0,
+            tile: null,
+            entryVertex: [0, 0, 0]
+        }
     );
     return closestDistance.tile ? closestDistance : null;
 };
@@ -78,7 +84,7 @@ type GetTilePath = ({
     track: TrackTile[],
     trackOffset?: Vec3,
     tileDimensions?: Vec3
-}) => { update: AnimationStep, duration: number };
+}) => { update: AnimationStep, duration: number, tile: any };
 const getTilePath: GetTilePath = ({
     tick,
     state,
@@ -93,6 +99,7 @@ const getTilePath: GetTilePath = ({
         return state;
     };
     let matchingTile = null;
+    let playerState = initialState;
     let duration = 1;
     const position = state.position;
     const center = closestTileCenter({ position, tileDimensions, trackOffset });
@@ -109,6 +116,7 @@ const getTilePath: GetTilePath = ({
     });
     if (entry) {
         matchingTile = entry.tile;
+        playerState.position = entry.entryVertex;
         const sameEntryPath = tileAnimations[matchingTile.name].find(
             a => a.entry === entry.angle
         );
@@ -117,10 +125,11 @@ const getTilePath: GetTilePath = ({
     }
     return {
         update: animation({
-            playerState: initialState,
+            playerState,
             tile: matchingTile
         }),
-        duration
+        duration,
+        tile: matchingTile
     };
 };
 

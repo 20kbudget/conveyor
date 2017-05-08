@@ -70,29 +70,35 @@ const draw: PlayerDraw = regl({
 });
 
 // player state
+type Animation = {
+    enabled: boolean,
+    update: AnimationStep,
+    startTime: number,
+    duration: number
+};
 export type PlayerState = {
     position: Vec3,
     angleZ: number,
+    currentTile: any,
     animations: {
-        move: {
-            update: AnimationStep,
-            startTime: number,
-            duration: number,
-            progress: number
-        }
+        move: Animation,
+        jump: Animation
     }
 };
 type CreatePlayerState = ({ position: Vec3 }) => PlayerState;
+const defaultAnimation = () => ({
+    enabled: false,
+    duration: 1,
+    startTime: 0,
+    update: ({ state, progress }) => state
+});
 const createPlayerState: CreatePlayerState = ({ position }) => ({
     position,
     angleZ: 0,
+    currentTile: { angle: 0 },
     animations: {
-        move: {
-            progress: 1,
-            duration: 1,
-            startTime: 0,
-            update: ({ state, progress }) => state
-        }
+        move: defaultAnimation(),
+        jump: defaultAnimation()
     }
 });
 
@@ -112,32 +118,66 @@ const updateMovement: UpdateMovement = ({
     tick
 }) => {
     let nextState = state;
-    let moveAnim = nextState.animations.move;
-    const firstFrame = moveAnim.startTime === 0;
-    const startTime = firstFrame ? time : moveAnim.startTime;
-    const moveDeltaTime = time - moveAnim.startTime;
-    let moveProgress = firstFrame ? 1 : moveDeltaTime / moveAnim.duration;
-    nextState = nextState.animations.move.update({
-        state: nextState,
-        progress: Math.min(moveProgress, 1)
-    });
-    const isMoveFinished = moveAnim.progress >= 1 || moveProgress >= 1;
-    if (isMoveFinished) {
-        const afterTileState = moveAnim.update({
+    const moveAnim = nextState.animations.move;
+    const jumpAnim = nextState.animations.jump;
+    const moveProgress = (time - moveAnim.startTime) / moveAnim.duration;
+    const jumpProgress = (time - jumpAnim.startTime) / jumpAnim.duration;
+    let nextTileInfo = {};
+    if (moveAnim.enabled) {
+        nextState = moveAnim.update({
             state: nextState,
-            progress: 1.1
+            progress: Math.min(moveProgress, 1)
         });
-        const updateAndDuration = getTilePath({
-            tick,
-            state: afterTileState,
-            initialState: nextState,
-            track: tiles,
-            trackOffset
+        if (moveProgress >= 1 && !jumpAnim.enabled) {
+            const afterTileState = moveAnim.update({
+                state: nextState,
+                progress: 1.1
+            });
+            nextTileInfo = getTilePath({
+                tick,
+                state: afterTileState,
+                initialState: nextState,
+                track: tiles,
+                trackOffset
+            });
+            nextState.currentTile = nextTileInfo.tile;
+            nextState.animations.move.update = nextTileInfo.update;
+            nextState.animations.move.duration = nextTileInfo.duration;
+            nextState.animations.move.startTime = time;
+        }
+    }
+    if (jumpAnim.enabled) {
+        nextState = jumpAnim.update({
+            state: nextState,
+            progress: Math.min(jumpProgress, 1)
         });
-        nextState.animations.move.update = updateAndDuration.update;
-        nextState.animations.move.duration = updateAndDuration.duration;
-        nextState.animations.move.startTime = time;
-        nextState.animations.move.progress = 0;
+        if (jumpProgress > 1) {
+            nextState.animations.jump.enabled = false;
+            nextTileInfo = getTilePath({
+                tick,
+                state: nextState,
+                initialState: nextState,
+                track: tiles,
+                trackOffset
+            });
+            if (nextTileInfo.tile === null) {
+                return nextState;
+            }
+            const tileDeltaAngle = Math.abs(
+                nextTileInfo.tile.angle - nextState.currentTile.angle
+            );
+            if (tileDeltaAngle % 180 !== 0) {
+                return nextState;
+            }
+            const discountFactor = tileDeltaAngle === 180
+                ? 1 - moveProgress
+                : moveProgress;
+            const timeDiscount = nextTileInfo.duration * discountFactor;
+            nextState.animations.move.update = nextTileInfo.update;
+            nextState.animations.move.duration = nextTileInfo.duration;
+            nextState.animations.move.startTime = time - timeDiscount;
+            nextState.currentTile = nextTileInfo.tile;
+        }
     }
     return nextState;
 };

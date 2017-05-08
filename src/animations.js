@@ -27,6 +27,22 @@ const tileSize = 8 * 8 / 10;
 
 const rad = degree => degree * Math.PI / 180;
 
+type JumpMove = ({ initialState: PlayerState }) => AnimationStep;
+const jumpMove: JumpMove = ({ initialState }) => ({ state, progress }) => {
+    const playerAngle = initialState.angleZ;
+    const jumpLength = tileSize;
+    const distance = jumpLength * progress;
+    const x = -Math.sin(rad(playerAngle)) * distance;
+    const y = Math.cos(rad(playerAngle)) * distance;
+    const position = [
+        Math.abs(x) < 0.01 ? state.position[0] : initialState.position[0] + x,
+        Math.abs(y) < 0.01 ? state.position[1] : initialState.position[1] + y,
+        0
+    ];
+    const nextState = extend(state, { position });
+    return nextState;
+};
+
 const lineMove: TileAnimation = ({ playerState, tile }) => ({
     state,
     progress
@@ -104,6 +120,7 @@ module.exports = {
     tileAnimations,
     lineMove,
     curveMove,
+    jumpMove,
     DIRECTION_CW,
     DIRECTION_CCW
 };

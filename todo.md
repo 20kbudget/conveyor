@@ -10,7 +10,7 @@
 
 - [ ] player
     - [ ] jump
-        - * [ ] tap listener
+        - [x] tap listener
         - [ ] animation
         - [ ] allow jumping only on certain angles and landing tile
     - [ ] death
