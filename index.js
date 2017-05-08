@@ -1,11 +1,11 @@
 // @flow
 const regl = require('regl')();
-
 const perspective = require('gl-mat4/perspective');
 const lookAt = require('gl-mat4/lookAt');
 const subtract = require('gl-vec3/subtract');
 const { drawTrack } = require('./src/track');
 const extend = require('xtend');
+const onPointerDown = require('./src/pointerdown');
 const parseTrack = require('./src/trackParser');
 const {
     drawPlayer,
@@ -58,6 +58,10 @@ let curveSteps = Math.round(steps * curveVsLineRatio);
 
 regl.clear({ color: [0, 0, 0, 1] });
 drawTrack({ tiles, view, projection });
+
+onPointerDown(window.document.body, event => {
+    console.log(event);
+});
 
 let tick = regl.frame(context => {
     const { time } = context;
