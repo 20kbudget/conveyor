@@ -35,7 +35,8 @@ type ParseTrack = ({
     branchTileName?: string
 }) => TrackTile[];
 
-const roundDecimals = n => Math.round(n * 100) / 100;
+// const roundDecimals = n => Math.round(n * 100) / 100;
+const roundDecimals = n => Number(n.toFixed(2));
 const offsetAfterTile = angle => {
     let x = tileSize * trackScale[0] * Math.round(Math.cos(rad(angle)));
     let y = tileSize * trackScale[1] * Math.round(Math.sin(rad(angle)));

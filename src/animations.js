@@ -85,7 +85,8 @@ const curveMove: CurveMove = curveName => ({ playerState, tile }) => ({
     const angle =
         entryAngle + direction * curveAngle + rotation + curveProgress;
     // console.log({angle})
-    const playerAngle = playerStartAngle + curveProgress;
+    const playerAngle = (playerStartAngle + curveProgress) % 360;
+    // const playerAngle = (playerStartAngle + curveProgress);
     const x = center[0] + radius * Math.cos(rad(angle));
     const y = center[1] + radius * Math.sin(rad(angle));
     const newPosition = [x, y, 0];

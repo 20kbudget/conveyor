@@ -59,7 +59,11 @@ const closestEntry = ({ position, tiles, tileDimensions }) => {
                 const angle = rad(t.entry + tile.angle);
                 const x = tile.offset[0] + Math.cos(angle) * tw / 2;
                 const y = tile.offset[1] + Math.sin(angle) * th / 2;
-                const entryVertex = [x, y, 0];
+                const entryVertex = [
+                    Number(x.toFixed(2)),
+                    Number(y.toFixed(2)),
+                    0
+                ];
                 const d = distance(entryVertex, position);
                 if (d < result.distance) {
                     result = { angle: t.entry, distance: d, tile, entryVertex };
@@ -79,6 +83,7 @@ const closestEntry = ({ position, tiles, tileDimensions }) => {
 
 type GetTilePath = ({
     tick: { cancel: Function },
+    playerAngle: number,
     state: PlayerState,
     track: TrackTile[],
     trackOffset?: Vec3,
@@ -86,6 +91,7 @@ type GetTilePath = ({
 }) => { update: AnimationStep, duration: number, tile: any };
 const getTilePath: GetTilePath = ({
     tick,
+    playerAngle,
     state,
     track,
     trackOffset = [0, 0, 0],
@@ -103,7 +109,9 @@ const getTilePath: GetTilePath = ({
     const center = closestTileCenter({ position, tileDimensions, trackOffset });
     const sameCenterTiles = track.filter(tile => {
         // fucking javascript 12.8 + 6.4 = 19.200000000000003
-        const hasSameCenter = distance(tile.offset, center) < 0.01;
+        // const hasSameCenter = distance(tile.offset, center) < 0.01;
+        // console.log(tile.offset, center)
+        const hasSameCenter = tile.offset.toString() === center.toString();
         return hasSameCenter;
     });
     // console.log({sameCenterTiles})
@@ -115,11 +123,13 @@ const getTilePath: GetTilePath = ({
     if (entry) {
         matchingTile = entry.tile;
         playerState.position = entry.entryVertex;
+        playerState.angleZ = playerAngle;
         const sameEntryPath = tileAnimations[matchingTile.name].find(
             a => a.entry === entry.angle
         );
         duration = sameEntryPath.duration;
         animation = sameEntryPath.animation;
+        // console.log('entryVertex', playerState.position, playerState.angleZ)
     }
     return {
         update: animation({
