@@ -77,8 +77,8 @@ let tick = regl.frame(context => {
         tick,
         trackOffset
     });
-    drawPlayer(drawPlayerParams(nextPlayer, { view, projection }));
     state = extend(state, { player: nextPlayer });
+    drawPlayer(drawPlayerParams(state.player, { view, projection }));
 });
 onPointerDown(window.document.body, event => {
     let nextPlayer = state.player;

@@ -11,7 +11,8 @@
 - [ ] player
     - [ ] jump
         - [x] tap listener
-        - [ ] animation
+        - [x] primitive animation
+        - [x] bug - player blinks in the tile entry after landing sometimes
         - [ ] allow jumping only on certain angles and landing tile
     - [ ] death
         - [ ] check if there is a conveyor on the same base z position

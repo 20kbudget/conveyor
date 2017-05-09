@@ -136,7 +136,6 @@ const updateMovement: UpdateMovement = ({
             nextTileInfo = getTilePath({
                 tick,
                 state: afterTileState,
-                initialState: nextState,
                 track: tiles,
                 trackOffset
             });
@@ -151,32 +150,47 @@ const updateMovement: UpdateMovement = ({
             state: nextState,
             progress: Math.min(jumpProgress, 1)
         });
-        if (jumpProgress > 1) {
-            nextState.animations.jump.enabled = false;
+        if (jumpProgress >= 1) {
             nextTileInfo = getTilePath({
                 tick,
                 state: nextState,
-                initialState: nextState,
                 track: tiles,
                 trackOffset
             });
             if (nextTileInfo.tile === null) {
-                return nextState;
+                console.log('no tile to land');
+                return state;
             }
             const tileDeltaAngle = Math.abs(
                 nextTileInfo.tile.angle - nextState.currentTile.angle
             );
             if (tileDeltaAngle % 180 !== 0) {
-                return nextState;
+                console.log('wrong landing angle');
+                return state;
             }
+
             const discountFactor = tileDeltaAngle === 180
                 ? 1 - moveProgress
                 : moveProgress;
             const timeDiscount = nextTileInfo.duration * discountFactor;
+            const nextTileStartTime = time - timeDiscount;
+            const nextTileMoveProgress = timeDiscount / nextTileInfo.duration;
+            console.log(
+                'valind landing?',
+                nextTileInfo,
+                moveProgress,
+                nextTileMoveProgress
+            );
             nextState.animations.move.update = nextTileInfo.update;
             nextState.animations.move.duration = nextTileInfo.duration;
-            nextState.animations.move.startTime = time - timeDiscount;
+            nextState.animations.move.startTime = nextTileStartTime;
             nextState.currentTile = nextTileInfo.tile;
+            nextState.animations.jump.enabled = false;
+            nextState = moveAnim.update({
+                state: nextState,
+                progress: Math.min(nextTileMoveProgress, 1)
+            });
+            console.log('state after move tick', nextState);
         }
     }
     return nextState;

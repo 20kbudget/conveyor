@@ -80,7 +80,6 @@ const closestEntry = ({ position, tiles, tileDimensions }) => {
 type GetTilePath = ({
     tick: { cancel: Function },
     state: PlayerState,
-    initialState: PlayerState,
     track: TrackTile[],
     trackOffset?: Vec3,
     tileDimensions?: Vec3
@@ -88,7 +87,6 @@ type GetTilePath = ({
 const getTilePath: GetTilePath = ({
     tick,
     state,
-    initialState,
     track,
     trackOffset = [0, 0, 0],
     tileDimensions = [tileSize, tileSize, 0]
@@ -99,7 +97,7 @@ const getTilePath: GetTilePath = ({
         return state;
     };
     let matchingTile = null;
-    let playerState = initialState;
+    let playerState = extend({}, state);
     let duration = 1;
     const position = state.position;
     const center = closestTileCenter({ position, tileDimensions, trackOffset });
