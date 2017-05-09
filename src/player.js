@@ -24,7 +24,7 @@ const drawPlayerParams: DrawPlayerParams = (
     const translation = translate([], identity([]), position);
     const rotation = rotateZ([], identity([]), rad(angleZ));
     const colorA = [0.8, 0.3, 0, 1];
-    const colorB = [1, 1, 0, 1];
+    const colorB = [0.5, 0.8, 0.5, 1];
     // const color = angleZ % (Math.PI / 2) === 0 ? colorB : colorA;
     const color = canJump === true ? colorB : colorA;
     return {
@@ -126,14 +126,15 @@ const updateMovement: UpdateMovement = ({
     const jumpAnim = nextState.animations.jump;
     const moveProgress = (time - moveAnim.startTime) / moveAnim.duration;
     const jumpProgress = (time - jumpAnim.startTime) / jumpAnim.duration;
-    const cappedMoveProgress = Math.min(moveProgress, 1);
+    let cappedMoveProgress = Math.min(moveProgress, 1);
     let nextTileInfo = {};
     if (moveAnim.enabled) {
         nextState = moveAnim.update({
             state: nextState,
             progress: cappedMoveProgress
         });
-        if (moveProgress >= 1 && !jumpAnim.enabled) {
+        // if (moveProgress >= 1 && !jumpAnim.enabled) {
+        if (moveProgress >= 1) {
             const afterTileState = moveAnim.update({
                 state: nextState,
                 progress: 1.1
@@ -149,35 +150,8 @@ const updateMovement: UpdateMovement = ({
             nextState.animations.move.update = nextTileInfo.update;
             nextState.animations.move.duration = nextTileInfo.duration;
             nextState.animations.move.startTime = time;
+            cappedMoveProgress = 0;
         }
-    }
-    if (nextState.angleZ % 90 !== 0) {
-        nextState.canJump = false;
-    } else {
-        const landingStateMoveProgress =
-             moveProgress + jumpAnim.duration / nextState.animations.move.duration;
-        const landingMoveState = moveAnim.update({
-            state: nextState,
-            progress: landingStateMoveProgress
-        });
-        const jumpSimulation = jumpMove({
-            initialState: nextState
-        });
-        const landingState = jumpSimulation({
-            state: landingMoveState,
-            progress: 1
-        });
-        const landingTileInfo = getTilePath({
-            tick,
-            playerAngle: nextState.angleZ,
-            state: landingState,
-            track: tiles,
-            trackOffset
-        });
-        const angleDiff = landingTileInfo.tile
-            ? Math.abs(landingTileInfo.tile.angle - nextState.currentTile.angle)
-            : 0;
-        nextState.canJump = angleDiff % 180 === 0;
     }
     if (jumpAnim.enabled) {
         nextState.canJump = false;
@@ -195,6 +169,7 @@ const updateMovement: UpdateMovement = ({
             });
             if (nextTileInfo.tile === null) {
                 console.log('no tile to land');
+                tick.cancel();
                 return state;
             }
             const tileDeltaAngle = Math.abs(
@@ -206,7 +181,7 @@ const updateMovement: UpdateMovement = ({
                     nextTileInfo.tile.angle,
                     nextState.currentTile.angle
                 );
-                // tick.cancel();
+                tick.cancel();
                 return state;
             }
 
@@ -216,25 +191,37 @@ const updateMovement: UpdateMovement = ({
             const timeDiscount = nextTileInfo.duration * discountFactor;
             const nextTileStartTime = time - timeDiscount;
             const nextTileMoveProgress = timeDiscount / nextTileInfo.duration;
-            // console.log(
-            // 'valind landing?',
-            // nextTileInfo,
-            // moveProgress,
-            // cappedMoveProgress,
-            // nextTileMoveProgress
-            // );
             nextState.animations.move.update = nextTileInfo.update;
             nextState.animations.move.duration = nextTileInfo.duration;
             nextState.animations.move.startTime = nextTileStartTime;
             nextState.currentTile = nextTileInfo.tile;
             nextState.animations.jump.enabled = false;
-            nextState = moveAnim.update({
-                state: nextState,
-                progress: Math.min(nextTileMoveProgress, 1)
-            });
-            // console.log('state after move tick', nextState);
         }
     }
+    const landingStateMoveProgress =
+        moveProgress + jumpAnim.duration / nextState.animations.move.duration;
+    const landingMoveState = moveAnim.update({
+        state: nextState,
+        progress: landingStateMoveProgress
+    });
+    const jumpSimulation = jumpMove({
+        initialState: nextState
+    });
+    const landingState = jumpSimulation({
+        state: landingMoveState,
+        progress: 1
+    });
+    const landingTileInfo = getTilePath({
+        tick,
+        playerAngle: nextState.angleZ,
+        state: landingState,
+        track: tiles,
+        trackOffset
+    });
+    const angleDiff = landingTileInfo.tile
+        ? Math.abs(landingTileInfo.tile.angle - nextState.currentTile.angle)
+        : 0;
+    nextState.canJump = nextState.angleZ % 90 === 0 && angleDiff % 180 === 0;
     return nextState;
 };
 
