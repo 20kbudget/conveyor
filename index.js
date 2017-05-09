@@ -7,7 +7,7 @@ const { drawTrack } = require('./src/track');
 const extend = require('xtend');
 const onPointerDown = require('./src/pointerdown');
 const parseTrack = require('./src/trackParser');
-const { jumpMove } = require('./src/animations');
+const { jumpMove, JUMP_DURATION } = require('./src/animations');
 const {
     drawPlayer,
     createPlayerState,
@@ -65,20 +65,22 @@ drawTrack({ tiles, view, projection });
 let time = 0;
 let tick = regl.frame(context => {
     time = context.time;
-    let nextPlayer = state.player;
+    let nextPlayer = extend({},state.player);
     if (!nextPlayer.animations.move.enabled) {
         nextPlayer.animations.move.enabled = true;
         nextPlayer.animations.move.startTime = time;
     }
     nextPlayer = updateMovement({
-        state: state.player,
+        state: nextPlayer,
         time,
         tiles,
         tick,
         trackOffset
     });
+    // console.log(nextPlayer.angleZ)
+    drawPlayer(drawPlayerParams(nextPlayer, { view, projection }));
     state = extend(state, { player: nextPlayer });
-    drawPlayer(drawPlayerParams(state.player, { view, projection }));
+    // drawPlayer(drawPlayerParams(state.player, { view, projection }));
 });
 onPointerDown(window.document.body, event => {
     if (!state.player.canJump){
@@ -91,7 +93,7 @@ onPointerDown(window.document.body, event => {
     });
     nextPlayer.animations.jump.enabled = true;
     nextPlayer.animations.jump.startTime = time;
-    nextPlayer.animations.jump.duration = 0.3;
+    nextPlayer.animations.jump.duration = JUMP_DURATION;
     state = extend(state, { player: nextPlayer });
 });
 

@@ -23,6 +23,7 @@ const DIRECTION_CW = -1;
 const DIRECTION_CCW = 1;
 const LINE_DURATION = 1.0;
 const CURVE_DURATION = LINE_DURATION * 0.6;
+const JUMP_DURATION = LINE_DURATION * 0.3;
 const tileSize = 8 * 8 / 10;
 
 const rad = degree => degree * Math.PI / 180;
@@ -122,6 +123,7 @@ module.exports = {
     lineMove,
     curveMove,
     jumpMove,
+    JUMP_DURATION,
     DIRECTION_CW,
     DIRECTION_CCW
 };
