@@ -225,7 +225,7 @@ const updateMovement: UpdateMovement = ({
                 state: nextState,
                 progress: Math.min(nextTileMoveProgress, 1)
             });
-            console.log('state after move tick', nextState);
+            // console.log('state after move tick', nextState);
         }
     }
     return nextState;

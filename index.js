@@ -81,6 +81,10 @@ let tick = regl.frame(context => {
     drawPlayer(drawPlayerParams(state.player, { view, projection }));
 });
 onPointerDown(window.document.body, event => {
+    if (!state.player.canJump){
+        console.log('cant jump')
+        return false
+    }
     let nextPlayer = state.player;
     nextPlayer.animations.jump.update = jumpMove({
         initialState: nextPlayer
