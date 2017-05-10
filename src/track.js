@@ -127,6 +127,7 @@ const getTilePath: GetTilePath = ({
         const sameEntryPath = tileAnimations[matchingTile.name].find(
             a => a.entry === entry.angle
         );
+        // console.log((entry.tile.angle + entry.angle -playerAngle)%360)
         duration = sameEntryPath.duration;
         animation = sameEntryPath.animation;
         // console.log('entryVertex', playerState.position, playerState.angleZ)

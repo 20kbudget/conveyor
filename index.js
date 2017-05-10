@@ -15,11 +15,12 @@ const {
     drawPlayerParams
 } = require('./src/player');
 
-const cameraDistance = 40;
+// const cameraDistance = 40;
+const cameraDistance = 80;
 
 const tileSize = 8 * 8 / 10;
-// const view = lookAt([], [0, 0, cameraDistance], [0, 0, 0], [0, 1.0, 0]);
-const view = lookAt([], [-0, -40, cameraDistance], [0, 0, 0], [0, 1.0, 0]);
+const view = lookAt([], [0, 0, cameraDistance], [0, 0, 0], [0, 1.0, 0]);
+// const view = lookAt([], [-0, -40, cameraDistance], [0, 0, 0], [0, 1.0, 0]);
 const projection = ({ viewportWidth, viewportHeight }) =>
     // perspective([], Math.PI / 3, viewportWidth / viewportHeight, 0.01, 1000);
     perspective([], Math.PI / 4, viewportWidth / viewportHeight, 0.01, 1000);
@@ -28,6 +29,7 @@ const tracks = [
     'f,f,l,l,f,f,f,l,l,f', // simple loop
     'f,r,r(f,f)f,r,f,f,r,f,b(l,f,f,begin)r,f', // both side options
     'f,r,r(f,f)f,b(l,f,f)r,f,f,r,f,b(l,f,f)r,f' // both side options
+    // 'r,f'
     // 'f,fr,r,f,r,r'
     // 'r(f,f)f,r,f,f,r,f,r(f,f)f,r,f,f,r,f', // player must start turned inside
     // 'l,r,f,r,r,f,l,l,f,r,r,f,r,l,l,r,r,r,l,l,r,r,r,l', // scissor

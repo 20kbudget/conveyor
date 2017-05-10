@@ -23,6 +23,7 @@ const easeOut = require('eases/sine-out');
 
 const DIRECTION_CW = -1;
 const DIRECTION_CCW = 1;
+// const LINE_DURATION = 2.0;
 const LINE_DURATION = 1.0;
 const CURVE_DURATION = LINE_DURATION * 0.6;
 const JUMP_DURATION = LINE_DURATION * 0.3;
@@ -33,24 +34,21 @@ const rad = degree => degree * Math.PI / 180;
 
 type JumpMove = ({ initialState: PlayerState }) => AnimationStep;
 const jumpMove: JumpMove = ({ initialState }) => ({ state, progress }) => {
+    const trackAngle = initialState.currentTile.angle;
     const playerAngle = initialState.angleZ;
     const jumpLength = tileSize;
+    const moveLength = tileSize * (JUMP_DURATION / LINE_DURATION);
     const jumpHeight = tileSize / 2;
-    // const jumpHeight = tileSize;
-    const distance = jumpLength * progress;
-    const x = -Math.sin(rad(playerAngle)) * distance;
-    const y = Math.cos(rad(playerAngle)) * distance;
+    const jumpDistance = jumpLength * progress;
+    const moveDistance = moveLength * progress;
+    const jX = -Math.sin(rad(playerAngle)) * jumpDistance;
+    const jY = Math.cos(rad(playerAngle)) * jumpDistance;
+    const mX = Math.cos(rad(trackAngle)) * moveDistance;
+    const mY = Math.sin(rad(trackAngle)) * moveDistance;
     const z = progress < 0.5
         ? easeOut(progress * 2) * jumpHeight
         : jumpHeight - jumpHeight * easeIn((progress - 0.5) * 2);
-    if (initialState.animations.jump.enabled) {
-        // console.log({ z });
-    }
-    const position = [
-        Math.abs(x) < 0.01 ? state.position[0] : initialState.position[0] + x,
-        Math.abs(y) < 0.01 ? state.position[1] : initialState.position[1] + y,
-        z
-    ];
+    const position = add([], initialState.position, [jX + mX, jY + mY, z]);
     const nextState = extend(state, { position });
     return nextState;
 };
@@ -134,6 +132,8 @@ module.exports = {
     lineMove,
     curveMove,
     jumpMove,
+    DIRECTION_CW,
+    DIRECTION_CCW,
     JUMP_DURATION,
     DIRECTION_CW,
     DIRECTION_CCW

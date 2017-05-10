@@ -10,8 +10,8 @@
 
 - [ ] player
     - [ ] jump
-        - [ ] * do not curve in the air
         - [ ] continue falling if not laded in a tile 
+        - [x] do not curve in the air
         - [x] z-axis animation
     - [ ] death
         - [ ] restart level or place player on a before-jump position
