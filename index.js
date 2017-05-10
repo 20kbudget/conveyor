@@ -16,14 +16,14 @@ const {
 } = require('./src/player');
 
 // const cameraDistance = 40;
-const cameraDistance = 80;
+const cameraDistance = 65;
 
 const tileSize = 8 * 8 / 10;
-const view = lookAt([], [0, 0, cameraDistance], [0, 0, 0], [0, 1.0, 0]);
-// const view = lookAt([], [-0, -40, cameraDistance], [0, 0, 0], [0, 1.0, 0]);
+// const view = lookAt([], [0, 0, cameraDistance], [0, 0, 0], [0, 1.0, 0]);
+const view = lookAt([], [-2.8, -cameraDistance / 2, cameraDistance /2], [-2.8, 0, 0], [0, 1.0, 0]);
 const projection = ({ viewportWidth, viewportHeight }) =>
     // perspective([], Math.PI / 3, viewportWidth / viewportHeight, 0.01, 1000);
-    perspective([], Math.PI / 4, viewportWidth / viewportHeight, 0.01, 1000);
+    perspective([], Math.PI / 3, viewportWidth / viewportHeight, 0.01, 1000);
 
 const tracks = [
     'f,f,l,l,f,f,f,l,l,f', // simple loop
