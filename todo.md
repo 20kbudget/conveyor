@@ -10,7 +10,9 @@
 
 - [ ] player
     - [ ] jump
-        - [ ] z-axis animation
+        - [ ] * do not curve in the air
+        - [ ] continue falling if not laded in a tile 
+        - [x] z-axis animation
     - [ ] death
         - [ ] restart level or place player on a before-jump position
 - [ ] tracks
@@ -30,3 +32,4 @@
 #### After launch
 
 - move more code to the gpu
+- rewrite some modules in ReasonML
