@@ -18,12 +18,15 @@ type CurveMove = string => TileAnimation;
 const add = require('gl-vec3/add');
 const rotateZ = require('gl-vec3/rotateZ');
 const extend = require('xtend');
+const easeIn = require('eases/sine-in');
+const easeOut = require('eases/sine-out');
 
 const DIRECTION_CW = -1;
 const DIRECTION_CCW = 1;
 const LINE_DURATION = 1.0;
 const CURVE_DURATION = LINE_DURATION * 0.6;
 const JUMP_DURATION = LINE_DURATION * 0.3;
+// const JUMP_DURATION = LINE_DURATION;
 const tileSize = 8 * 8 / 10;
 
 const rad = degree => degree * Math.PI / 180;
@@ -32,13 +35,21 @@ type JumpMove = ({ initialState: PlayerState }) => AnimationStep;
 const jumpMove: JumpMove = ({ initialState }) => ({ state, progress }) => {
     const playerAngle = initialState.angleZ;
     const jumpLength = tileSize;
+    const jumpHeight = tileSize / 2;
+    // const jumpHeight = tileSize;
     const distance = jumpLength * progress;
     const x = -Math.sin(rad(playerAngle)) * distance;
     const y = Math.cos(rad(playerAngle)) * distance;
+    const z = progress < 0.5
+        ? easeOut(progress * 2) * jumpHeight
+        : jumpHeight - jumpHeight * easeIn((progress - 0.5) * 2);
+    if (initialState.animations.jump.enabled) {
+        // console.log({ z });
+    }
     const position = [
         Math.abs(x) < 0.01 ? state.position[0] : initialState.position[0] + x,
         Math.abs(y) < 0.01 ? state.position[1] : initialState.position[1] + y,
-        0
+        z
     ];
     const nextState = extend(state, { position });
     return nextState;

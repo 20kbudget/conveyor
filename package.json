@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "balanced-match": "^0.4.2",
+    "eases": "^1.0.8",
     "gl-mat4": "^1.1.4",
     "gl-vec3": "^1.0.3",
     "ramda": "^0.23.0",
