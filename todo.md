@@ -1,7 +1,7 @@
 ### Current Milestone
 
 #### May 7-12
-- jump to different track tiles
+- OK jump to different track tiles
 - publish alpha on itch.io
 - TDAH Talk about the game
 - status updates on blogs
@@ -10,18 +10,19 @@
 
 - [ ] player
     - [ ] jump
+        - [ ] z-axis animation
         - [x] tap listener
         - [x] primitive animation
         - [x] bug - player blinks in the tile entry after landing sometimes
-        - [ ] * allow jumping only on certain angles and landing tile
+        - [x] allow jumping only on certain angles and landing tile
     - [ ] death
-        - [ ] check if there is a conveyor on the same base z position
-    - [x] move
+        - [ ] restart level or place player on a before-jump position
+        - [x] check if there is a conveyor on the same base z position
 - [ ] tracks
     - [ ] separated tracks
         - [ ] syntax
         - [ ] implementation
-    - [ ] test / implement branch of a branch (nested parenthesis)
+    - [ ] implement branch of a branch (nested parenthesis)
 - [ ] world
     - [ ] regular tick times?
 - [ ] tools / debug
