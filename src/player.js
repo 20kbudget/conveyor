@@ -21,18 +21,25 @@ const tileSize = 8 * 8 / 10;
 const rad = degree => degree * Math.PI / 180;
 
 type DrawPlayerParams = (
-    playerState: { position: Vec3, angleZ: number, canJump: boolean },
+    playerState: {
+        position: Vec3,
+        angleZ: number,
+        canJump: boolean,
+        isDead: boolean
+    },
     renderProperties: { view: Mat4, projection: Mat4 }
 ) => PlayerDrawArgs;
 const drawPlayerParams: DrawPlayerParams = (
-    { position, angleZ, canJump },
+    { position, angleZ, canJump, isDead },
     { view, projection }
 ) => {
     const translation = translate([], identity([]), position);
     const rotation = rotateZ([], identity([]), rad(angleZ));
-    const colorA = [0.8, 0.3, 0, 1];
-    const colorB = [0.5, 0.8, 0.5, 1];
-    const color = canJump === true ? colorB : colorA;
+    const blockedColor = [0.8, 0.3, 0, 1];
+    const deadColor = [0.3, 0.3, 0.3, 1];
+    const canJumpColor = [0.5, 0.8, 0.5, 1];
+    let color = canJump === true ? canJumpColor : blockedColor;
+    color = isDead ? deadColor : color;
     return {
         color,
         translation,
@@ -90,6 +97,7 @@ export type PlayerState = {
     direction: number,
     currentTile: any,
     canJump: boolean,
+    isDead: boolean,
     animations: {
         move: Animation,
         jump: Animation
@@ -108,6 +116,7 @@ const createPlayerState: CreatePlayerState = ({ position }) => ({
     direction: DIRECTION_CW,
     currentTile: { angle: 0 },
     canJump: false,
+    isDead: false,
     animations: {
         move: defaultAnimation(1),
         jump: defaultAnimation(JUMP_DURATION)
@@ -147,6 +156,7 @@ const updateMovement: UpdateMovement = ({
         nextState = jumpAnim.update({
             state: nextState,
             progress: Math.min(jumpProgress, 1)
+            // progress: jumpProgress
         });
     }
     if (!jumpAnim.enabled && moveProgress >= 1) {
@@ -175,15 +185,22 @@ const updateMovement: UpdateMovement = ({
             track: tiles,
             trackOffset
         });
+        const tileDeltaAngle = nextTileInfo.tile
+            ? Math.abs(nextTileInfo.tile.angle - nextState.currentTile.angle)
+            : 0;
         if (nextTileInfo.tile === null) {
-            console.log('no tile to land');
-            tick.cancel();
-            return state;
-        }
-        const tileDeltaAngle = Math.abs(
-            nextTileInfo.tile.angle - nextState.currentTile.angle
-        );
-        if (tileDeltaAngle % 180 !== 0) {
+            if (jumpProgress > 2) {
+                nextState.isDead = true;
+                // tick.cancel();
+            }
+            nextState = jumpAnim.update({
+                state: nextState,
+                // progress: Math.min(jumpProgress, 1)
+                progress: jumpProgress
+            });
+            // console.log({nextState})
+            return nextState;
+        } else if (tileDeltaAngle % 180 !== 0) {
             console.log(
                 'wrong landing angle',
                 nextTileInfo.tile.angle,
@@ -191,44 +208,41 @@ const updateMovement: UpdateMovement = ({
             );
             tick.cancel();
             return state;
-        }
-
-        const tilesDistance = distance(
-            nextState.currentTile.offset,
-            nextTileInfo.tile.offset
-        );
-        nextState.animations.jump.enabled = false;
-        nextState.currentTile = nextTileInfo.tile;
-        nextState.animations.move.update = nextTileInfo.update;
-        nextState.animations.move.duration = nextTileInfo.duration;
-        const sameDirection = tileDeltaAngle !== 180;
-        const landBeforeEnd = tilesDistance < tileSize * 1.1;
-        const remainingTime = nextTileInfo.duration * (1 - cappedMoveProgress);
-        const extraTime =
-            nextTileInfo.duration * (Math.min(2, moveProgress) - 1);
-        let nextTileStartTime = time;
-        if (landBeforeEnd) {
-            if (sameDirection) {
-                nextTileStartTime = nextState.animations.move.startTime;
-            } else {
-                nextTileStartTime = time - remainingTime;
-            }
         } else {
-            if (sameDirection) {
-                nextTileStartTime = time - extraTime;
+            nextState.animations.jump.enabled = false;
+            const tilesDistance = distance(
+                nextState.currentTile.offset,
+                nextTileInfo.tile.offset
+            );
+            nextState.currentTile = nextTileInfo.tile;
+            nextState.animations.move.update = nextTileInfo.update;
+            nextState.animations.move.duration = nextTileInfo.duration;
+            const sameDirection = tileDeltaAngle !== 180;
+            const landBeforeEnd = tilesDistance < tileSize * 1.1;
+            const remainingTime =
+                nextTileInfo.duration * (1 - cappedMoveProgress);
+            const extraTime =
+                nextTileInfo.duration * (Math.min(2, moveProgress) - 1);
+            let nextTileStartTime = time;
+            if (landBeforeEnd) {
+                if (sameDirection) {
+                    nextTileStartTime = nextState.animations.move.startTime;
+                } else {
+                    nextTileStartTime = time - remainingTime;
+                }
             } else {
-                nextTileStartTime = time - nextTileInfo.duration + extraTime;
+                if (sameDirection) {
+                    nextTileStartTime = time - extraTime;
+                } else {
+                    nextTileStartTime =
+                        time - nextTileInfo.duration + extraTime;
+                }
             }
+            nextState.animations.move.startTime = nextTileStartTime;
         }
-        nextState.animations.move.startTime = nextTileStartTime;
     }
-    const jumpSimulation = jumpMove({
-        initialState: nextState
-    });
-    const landingState = jumpSimulation({
-        state: nextState,
-        progress: 1
-    });
+    const jumpSimulation = jumpMove({ initialState: nextState });
+    const landingState = jumpSimulation({ state: nextState, progress: 1 });
     const landingTileInfo = getTilePath({
         tick,
         playerAngle: nextState.angleZ,

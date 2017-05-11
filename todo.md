@@ -2,29 +2,33 @@
 
 #### May 7-12
 - OK jump to different track tiles
-- publish alpha on itch.io
+- OK publish alpha on itch.io
 - TDAH Talk about the game
 - status updates on blogs
 
 ### Task list
 
-- [ ] player
-    - [ ] jump
-        - [ ] continue falling if not laded in a tile 
-        - [x] do not curve in the air
-        - [x] z-axis animation
-    - [ ] death
-        - [ ] restart level or place player on a before-jump position
-- [ ] tracks
+- Player
+    - death
+        - [x] continue falling if not laded in a tile 
+        - [x] restart level or place player on a before-jump position
+
+- Bugs
+    - [ ] landing on a junction rotates player
+
+- Tracks
     - [ ] separated tracks
         - [ ] syntax
         - [ ] implementation
     - [ ] implement branch of a branch (nested parenthesis)
-- [ ] world
+
+- World
     - [ ] regular tick times?
-- [ ] tools / debug
+
+- Tools / debug
     - [ ] map editor app
-- [ ] platform-specific
+
+- Platform-specific
     - [ ] detect support for webgl and display a message when not available
 
 ### Future Roadmap

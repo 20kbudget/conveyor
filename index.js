@@ -16,11 +16,17 @@ const {
 } = require('./src/player');
 
 // const cameraDistance = 40;
-const cameraDistance = 65;
+// const cameraDistance = 65;
+const cameraDistance = 85;
 
 const tileSize = 8 * 8 / 10;
 // const view = lookAt([], [0, 0, cameraDistance], [0, 0, 0], [0, 1.0, 0]);
-const view = lookAt([], [-2.8, -cameraDistance / 2, cameraDistance /2], [-2.8, 0, 0], [0, 1.0, 0]);
+const view = lookAt(
+    [],
+    [-2.8, -cameraDistance / 2, cameraDistance / 2],
+    [-2.8, 0, 0],
+    [0, 1.0, 0]
+);
 const projection = ({ viewportWidth, viewportHeight }) =>
     // perspective([], Math.PI / 3, viewportWidth / viewportHeight, 0.01, 1000);
     perspective([], Math.PI / 3, viewportWidth / viewportHeight, 0.01, 1000);
@@ -54,8 +60,10 @@ const tiles = parseTrack({
     reverse: false
 });
 
+const initialPlayer = createPlayerState({ position: playerOffset });
 let state = {
-    player: createPlayerState({ position: playerOffset })
+    player: initialPlayer,
+    lastAlivePlayer: initialPlayer
 };
 state.player.angleZ = 180;
 
@@ -81,16 +89,22 @@ let tick = regl.frame(context => {
         tick,
         trackOffset
     });
-    // console.log(nextPlayer.angleZ)
     drawPlayer(drawPlayerParams(nextPlayer, { view, projection }));
+    if (nextPlayer.isDead) {
+        nextPlayer = extend({}, state.lastAlivePlayer);
+        nextPlayer.animations.move.startTime =
+            time - nextPlayer.animations.move.duration / 4;
+        nextPlayer.animations.jump.enabled = false;
+    }
     state = extend(state, { player: nextPlayer });
-    // drawPlayer(drawPlayerParams(state.player, { view, projection }));
 });
 onPointerDown(window.document.body, event => {
     if (!state.player.canJump || state.player.animations.jump.enabled) {
         console.log('cant jump');
         return false;
     }
+    const lastAlivePlayer = extend({}, state.player);
+    console.log({ lastAlivePlayer });
     let nextPlayer = state.player;
     nextPlayer.animations.jump.update = jumpMove({
         initialState: nextPlayer
@@ -98,11 +112,5 @@ onPointerDown(window.document.body, event => {
     nextPlayer.animations.jump.enabled = true;
     nextPlayer.animations.jump.startTime = time;
     nextPlayer.animations.jump.duration = JUMP_DURATION;
-    state = extend(state, { player: nextPlayer });
+    state = extend(state, { player: nextPlayer, lastAlivePlayer });
 });
-
-// stop after x seconds (dev-mode)
-// window.setTimeout(() => {
-// console.log('end');
-// tick.cancel();
-// }, 10500);

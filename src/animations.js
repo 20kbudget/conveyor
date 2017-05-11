@@ -41,13 +41,16 @@ const jumpMove: JumpMove = ({ initialState }) => ({ state, progress }) => {
     const jumpHeight = tileSize / 2;
     const jumpDistance = jumpLength * progress;
     const moveDistance = moveLength * progress;
-    const jX = -Math.sin(rad(playerAngle)) * jumpDistance;
-    const jY = Math.cos(rad(playerAngle)) * jumpDistance;
-    const mX = Math.cos(rad(trackAngle)) * moveDistance;
-    const mY = Math.sin(rad(trackAngle)) * moveDistance;
-    const z = progress < 0.5
+    let jX = -Math.sin(rad(playerAngle)) * jumpDistance;
+    let jY = Math.cos(rad(playerAngle)) * jumpDistance;
+    let mX = Math.cos(rad(trackAngle)) * moveDistance;
+    let mY = Math.sin(rad(trackAngle)) * moveDistance;
+    let z = progress < 0.5
         ? easeOut(progress * 2) * jumpHeight
         : jumpHeight - jumpHeight * easeIn((progress - 0.5) * 2);
+    if (progress > 1) {
+        z = -jumpHeight * ((progress - 1) * 6);
+    }
     const position = add([], initialState.position, [jX + mX, jY + mY, z]);
     const nextState = extend(state, { position });
     return nextState;
