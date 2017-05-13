@@ -11,9 +11,9 @@ const { jumpMove, JUMP_DURATION } = require('./src/animations');
 const {
     drawPlayer,
     createPlayerState,
-    updateMovement,
     drawPlayerParams
 } = require('./src/player');
+const updatePlayer =  require('./src/playerTick');
 
 // const cameraDistance = 40;
 // const cameraDistance = 65;
@@ -82,7 +82,7 @@ let tick = regl.frame(context => {
         nextPlayer.animations.move.enabled = true;
         nextPlayer.animations.move.startTime = time;
     }
-    nextPlayer = updateMovement({
+    nextPlayer = updatePlayer({
         state: nextPlayer,
         time,
         tiles,

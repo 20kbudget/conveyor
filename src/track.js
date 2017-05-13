@@ -82,7 +82,6 @@ const closestEntry = ({ position, tiles, tileDimensions }) => {
 };
 
 type GetTilePath = ({
-    tick: { cancel: Function },
     playerAngle: number,
     state: PlayerState,
     track: TrackTile[],
@@ -90,7 +89,6 @@ type GetTilePath = ({
     tileDimensions?: Vec3
 }) => { update: AnimationStep, duration: number, tile: any };
 const getTilePath: GetTilePath = ({
-    tick,
     playerAngle,
     state,
     track,
@@ -99,7 +97,6 @@ const getTilePath: GetTilePath = ({
 }) => {
     let animation = ({ playerState, tile }) => ({ state, progress }) => {
         console.log('noop animation');
-        tick.cancel();
         return state;
     };
     let matchingTile = null;
@@ -108,13 +105,9 @@ const getTilePath: GetTilePath = ({
     const position = state.position;
     const center = closestTileCenter({ position, tileDimensions, trackOffset });
     const sameCenterTiles = track.filter(tile => {
-        // fucking javascript 12.8 + 6.4 = 19.200000000000003
-        // const hasSameCenter = distance(tile.offset, center) < 0.01;
-        // console.log(tile.offset, center)
         const hasSameCenter = tile.offset.toString() === center.toString();
         return hasSameCenter;
     });
-    // console.log({sameCenterTiles})
     const entry = closestEntry({
         position,
         tiles: sameCenterTiles,
