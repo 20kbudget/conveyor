@@ -52,15 +52,12 @@ const update: Update = ({ state, time, tiles, trackOffset, tick }) => {
         tiles,
         trackOffset
     });
-    const angleDiff = stateAfterJump.currentTile
-        ? Math.abs(
-              stateAfterJump.currentTile.angle - nextState.currentTile.angle
-          )
-        : 0;
     nextState.canJump =
         !jumpAnim.enabled &&
         nextState.angleZ % 90 === 0 &&
-        angleDiff % 180 === 0;
+        (!stateAfterJump.currentTile ||
+            (stateAfterJump.currentTile &&
+                stateAfterJump.currentTile.name === 'forward'));
 
     if (!jumpAnim.enabled && moveAnim.enabled) {
         nextState = moveAnim.update({
@@ -115,19 +112,14 @@ const update: Update = ({ state, time, tiles, trackOffset, tick }) => {
                 return nextState;
             }
 
-            // wrong landing angle (shouldnt be poissible)
-            if (landedAngleDiff % 180 !== 0) {
-                console.log(
-                    'wrong landing angle',
-                    landedState.currentTile.angle,
-                    nextState.currentTile.angle
-                );
-                tick.cancel();
-                return state;
+            // landed on a no-landeable tile
+            const landedTileName = landedState.currentTile.name;
+            if (landedTileName !== 'forward') {
+                nextState.isDead = true;
+                return nextState;
             }
 
             // it is safe to land, end jump
-            console.log('landed');
 
             // change move start time to
             const sameDirection = landedAngleDiff !== 180;
