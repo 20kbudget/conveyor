@@ -20,13 +20,47 @@ const {
 const tileSize = 8 * 8 / 10;
 const rad = degree => degree * Math.PI / 180;
 
+// player state
+type Animation = {
+    enabled: boolean,
+    update: AnimationStep,
+    startTime: number,
+    duration: number
+};
+export type PlayerState = {
+    position: Vec3,
+    angleZ: number,
+    direction: number,
+    currentTile: any,
+    canJump: boolean,
+    isDead: boolean,
+    animations: {
+        move: Animation,
+        jump: Animation
+    }
+};
+type CreatePlayerState = ({ position: Vec3 }) => PlayerState;
+const defaultAnimation = duration => ({
+    enabled: false,
+    duration,
+    startTime: 0,
+    update: ({ state, progress }) => state
+});
+const createPlayerState: CreatePlayerState = ({ position }) => ({
+    position,
+    angleZ: 0,
+    direction: DIRECTION_CW,
+    currentTile: { angle: 0 },
+    canJump: false,
+    isDead: false,
+    animations: {
+        move: defaultAnimation(1),
+        jump: defaultAnimation(JUMP_DURATION)
+    }
+});
+
 type DrawPlayerParams = (
-    playerState: {
-        position: Vec3,
-        angleZ: number,
-        canJump: boolean,
-        isDead: boolean
-    },
+    playerState: PlayerState,
     renderProperties: { view: Mat4, projection: Mat4 }
 ) => PlayerDrawArgs;
 const drawPlayerParams: DrawPlayerParams = (
@@ -82,45 +116,6 @@ const draw: PlayerDraw = regl({
     void main() {
         gl_FragColor = color;
     }`
-});
-
-// player state
-type Animation = {
-    enabled: boolean,
-    update: AnimationStep,
-    startTime: number,
-    duration: number
-};
-export type PlayerState = {
-    position: Vec3,
-    angleZ: number,
-    direction: number,
-    currentTile: any,
-    canJump: boolean,
-    isDead: boolean,
-    animations: {
-        move: Animation,
-        jump: Animation
-    }
-};
-type CreatePlayerState = ({ position: Vec3 }) => PlayerState;
-const defaultAnimation = duration => ({
-    enabled: false,
-    duration,
-    startTime: 0,
-    update: ({ state, progress }) => state
-});
-const createPlayerState: CreatePlayerState = ({ position }) => ({
-    position,
-    angleZ: 0,
-    direction: DIRECTION_CW,
-    currentTile: { angle: 0 },
-    canJump: false,
-    isDead: false,
-    animations: {
-        move: defaultAnimation(1),
-        jump: defaultAnimation(JUMP_DURATION)
-    }
 });
 
 // reducers
