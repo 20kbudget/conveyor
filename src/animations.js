@@ -23,11 +23,9 @@ const easeOut = require('eases/sine-out');
 
 const DIRECTION_CW = -1;
 const DIRECTION_CCW = 1;
-// const LINE_DURATION = 2.0;
 const LINE_DURATION = 1.0;
 const CURVE_DURATION = LINE_DURATION * 0.6;
 const JUMP_DURATION = LINE_DURATION * 0.3;
-// const JUMP_DURATION = LINE_DURATION;
 const tileSize = 8 * 8 / 10;
 
 const rad = degree => degree * Math.PI / 180;
@@ -93,13 +91,10 @@ const curveMove: CurveMove = curveName => ({ playerState, tile }) => ({
     const center = add([], tile.offset, rotatedCurveLocalCenter);
     const rotation = tile.angle;
     const playerStartAngle = playerState.angleZ;
-    // console.log({rotation})
     const curveProgress = progress * curveAngle * direction;
     const angle =
         entryAngle + direction * curveAngle + rotation + curveProgress;
-    // console.log({angle})
     const playerAngle = (playerStartAngle + curveProgress) % 360;
-    // const playerAngle = (playerStartAngle + curveProgress);
     const x = center[0] + radius * Math.cos(rad(angle));
     const y = center[1] + radius * Math.sin(rad(angle));
     const newPosition = [x, y, 0];
