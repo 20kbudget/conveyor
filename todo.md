@@ -9,12 +9,9 @@
 ### Task list
 
 - Player
-    - death
-        - [x] continue falling if not laded in a tile 
-        - [x] restart level or place player on a before-jump position
 
 - Bugs
-    - [ ] landing on a junction rotates player
+    - [ ] * landing on a junction rotates player
 
 - Tracks
     - [ ] separated tracks
